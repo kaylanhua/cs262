@@ -25,12 +25,12 @@ def main() -> None:
 
     return
 
-def send_msg(self, addr, line):
-    line = line +'\n'
+# def send_msg(self, addr, line):
+#     line = line +'\n'
     
-    for session in self.sessions:
-        if addr == session.addr:
-            session.push(line.encode())
+#     for session in self.sessions:
+#         if addr == session.addr:
+#             session.push(line.encode())
             
             
     

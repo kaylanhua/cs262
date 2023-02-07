@@ -2,7 +2,7 @@
 # modulize the connection
 
 import socket
-import thread
+# import thread
 HOST = '127.0.0.1'
 PORT = 6000
 
@@ -41,7 +41,7 @@ def main() -> None:
 if __name__ == "__main__":
     main()
     
-def broadcast(self, line):
-    for session in self.sessions:
-        line = line + '\n'
-        session.push(line.encode())    
+# def broadcast(self, line):
+#     for session in self.sessions:
+#         line = line + '\n'
+#         session.push(line.encode())   
