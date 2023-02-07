@@ -1,5 +1,6 @@
 # cs 262 design project 1
-project members: 
+project members: kayla huang
+
 ---
 
 ## project specifications
