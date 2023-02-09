@@ -20,19 +20,48 @@ class Server:
         # self.socket.setblocking(False)
         # self.socket.settimeout(0.2)
         print(f"Server started on {self.host}:{self.port}")
+        
+        connection, address = self.socket.accept()
 
         while True:
             try:
-                connection, address = self.socket.accept()
                 self.receive_message(connection)
                 # self.new_user(connection, address)
             except OSError as e:
                 pass 
 
+    def create_account(self, username, connection):
+        print(f"{username} has created an account")
+        self.login(username, connection)
+   
+    def login(self, username, connection):
+        self.sessions[username] = connection
+        print(f"{username} has logged in")
+
     def receive_message(self, connection):
-        data = connection.recv(128)
+        data = connection.recv(4096)
         data = data.decode('ascii') 
         print(f"The data is: {data}")
+        
+        opcode = data[:1]
+        meat = data[1:]
+        if opcode == '0':
+            if meat in self.sessions:
+                # user alr exists, log in
+                self.login(meat, connection)
+            else:
+                # user does not exist yet, create new user and log in
+                self.create_account(meat, connection)
+        elif opcode == '1':
+            self.login(meat, connection)
+        elif opcode == '2':
+            target, message = meat.split('%')
+            self.new_message(target, message, connection)
+        elif opcode == '3': # log out
+            self.sessions[meat] = None
+        elif opcode == '4': # delete account
+            self.sessions.pop(meat)
+        
         self.socket.close()
         
         

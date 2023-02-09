@@ -8,6 +8,13 @@ import socket
 HOST = '127.0.0.1'
 PORT = 6000
 
+# op codes
+# 0: create account
+# 1: login
+# 2: send message
+# 3: logout
+# 4: delete account
+
 # ==================================
 
 class Client:
@@ -15,29 +22,41 @@ class Client:
     def __init__(self, host, port):
         self.host = host
         self.port = port
-        self.id = 0
-        
+        self.username = ''
         
     def create_account(self):
         print('Please choose a username.')
         username = input()
+        self.username = username
         self.send_message('0', username)
         pass
         
-    def log_in(self):
+    def login(self):
         print('Please enter your username.')
         username = input()
+        self.username = username
         self.send_message('1', username)
         pass
     
-    def send_message(self, opcode, message):
-        msg = f'{opcode}{message}'
+    def send_message(self, opcode, message, target=None):
+        if target:
+            msg = f'{opcode}{target}%{message}'
+        else:
+            msg = f'{opcode}{message}'
         bmsg = msg.encode('ascii')
         sent = self.conn.send(bmsg)
         print(f'Message sent, {sent}/{len(msg)} bytes transmitted')
         pass
     
-    def start_message(self):
+    def query_message(self):
+        print('Who would you like to send a message to?')
+        target = input()
+        print('What is your message?')
+        msg = input()
+        self.send_message(2, msg, target)
+        pass
+    
+    def welcome_message(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((HOST, PORT))
         
@@ -46,18 +65,42 @@ class Client:
         if response == '0':
             self.create_account()
         elif response == '1':
-            self.log_in()
+            self.login()
         else:
             print('Invalid input. Please try again.')
-            self.start_message()
+            self.welcome_message()
+            return
+        
+    def main_message(self):
+        print('What do you want? 2 for send message, 3 for log out, 4 for delete account :(')
+        op = input()
+        if op == "2":
+            self.query_message()
+        elif op == "3":
+            self.send_message('3', self.username)
+            self.logout()
+        elif op == "4":
+            self.send_message('4', self.username)
+        else: 
+            print('Invalid input. Please try again.')
+            self.main_message()
+            return
+        
+    def run_client(self):
+        self.welcome_message()
+        while True:
+            self.main_message()
             
-    def end(self):
+    def logout(self):
         self.conn.close()
+        print('You have been logged out. Exiting...')
+        exit()
 
 def main() -> None:
     
     client = Client(HOST, PORT)
-    client.start_message()
+    client.run_client()
+    
 
     return
 
