@@ -1,47 +1,52 @@
-# server side is also a main
-# modulize the connection
-
 import socket
-# import thread
+
 HOST = '127.0.0.1'
 PORT = 6000
 
 # ==================================
 
-# def connections():
-#     print('Got connection from', addr)
-#     while True:
-#         c, addr = s.accept()     # Establish connection with client.
-#         thread.start_new_thread(on_new_client,(c,addr))
-        
+class Server:
 
-# def receive_message():
-    # receives from the client
-    # within each thread function it's just a while loop that listens to a client message
-    
-    
+    def __init__(self, host, port):
+        self.host = host
+        self.port = port
+        # to track who is logged in (dictionary w all usernames as key and connection as value)
+        self.sessions = dict() 
+
+    def start(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.bind((self.host, self.port))
+        self.socket.listen(5)
+        # self.socket.setblocking(False)
+        # self.socket.settimeout(0.2)
+        print(f"Server started on {self.host}:{self.port}")
+
+        while True:
+            try:
+                connection, address = self.socket.accept()
+                self.receive_message(connection)
+                # self.new_user(connection, address)
+            except OSError as e:
+                pass 
+
+    def receive_message(self, connection):
+        data = connection.recv(128)
+        data = data.decode('ascii') 
+        print(f"The data is: {data}")
+        self.socket.close()
+        
+        
+    # def new_user(self, username, address):
+    #     self.users.add(username)
+    #     self.sessions.append(connection)
+
 
 def main() -> None:
-    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket.bind((HOST, PORT))
-    serversocket.listen()
-    clientsocket, addr = serversocket.accept()
-    print('Connected to by:', addr)
+
+    serv = Server(HOST, PORT)
+    serv.start()
     
-    data = clientsocket.recv(128)
-    data = data.decode('ascii')
-
-    print(f"The data is: {data}")
-
-    serversocket.close()
-
-
-    return
 
 if __name__ == "__main__":
     main()
     
-# def broadcast(self, line):
-#     for session in self.sessions:
-#         line = line + '\n'
-#         session.push(line.encode())   
