@@ -1,4 +1,5 @@
 import socket
+import time
 
 HOST = '127.0.0.1'
 PORT = 6000
@@ -17,16 +18,16 @@ class Server:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((self.host, self.port))
         self.socket.listen(5)
-        # self.socket.setblocking(False)
-        # self.socket.settimeout(0.2)
         print(f"Server started on {self.host}:{self.port}")
         
         connection, address = self.socket.accept()
 
-        while True:
+        cont = self.receive_message(connection)
+        while cont:
             try:
-                self.receive_message(connection)
-                # self.new_user(connection, address)
+                cont = self.receive_message(connection)
+                time.sleep(0.5)
+
             except OSError as e:
                 pass 
 
@@ -40,7 +41,10 @@ class Server:
 
     def receive_message(self, connection):
         data = connection.recv(4096)
+        print('Data (raw):', data)
         data = data.decode('ascii') 
+        if len(data) == 0:
+            return False
         print(f"The data is: {data}")
         
         opcode = data[:1]
@@ -58,16 +62,27 @@ class Server:
             target, message = meat.split('%')
             self.new_message(target, message, connection)
         elif opcode == '3': # log out
-            self.sessions[meat] = None
+            self.logout(meat)
+            return False
         elif opcode == '4': # delete account
             self.sessions.pop(meat)
+            self.logout(meat)
+            return False
         
+        return True
+    
+    def new_message(self, target, message, connection):
+        print(f'Received the following message for {target}: {message}')
+    
+    def logout(self, username):
+        self.sessions[username] = None
+        self.socket.close()
+        print(f"{username} has logged out")
+    
+    def end(self):
         self.socket.close()
         
         
-    # def new_user(self, username, address):
-    #     self.users.add(username)
-    #     self.sessions.append(connection)
 
 
 def main() -> None:

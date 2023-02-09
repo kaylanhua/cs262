@@ -1,7 +1,3 @@
-# main that sets up and loops
-# You should use sockets and transfer buffers (of your definition) between the machines.
-# TODO: set up a conda env
-
 # send user id, requests need to be sent to user ids
 
 import socket
@@ -44,7 +40,7 @@ class Client:
         else:
             msg = f'{opcode}{message}'
         bmsg = msg.encode('ascii')
-        sent = self.conn.send(bmsg)
+        sent = self.conn.sendall(bmsg)
         print(f'Message sent, {sent}/{len(msg)} bytes transmitted')
         pass
     
@@ -77,10 +73,13 @@ class Client:
         if op == "2":
             self.query_message()
         elif op == "3":
+            # logout
             self.send_message('3', self.username)
             self.logout()
         elif op == "4":
+            # delete account
             self.send_message('4', self.username)
+            self.logout()
         else: 
             print('Invalid input. Please try again.')
             self.main_message()
@@ -100,7 +99,6 @@ def main() -> None:
     
     client = Client(HOST, PORT)
     client.run_client()
-    
 
     return
 
