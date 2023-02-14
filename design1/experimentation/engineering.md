@@ -1,12 +1,15 @@
 # engineering notebook
 Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
-## to do
-- [ ] how to create an account
-- [ ] how to log in
-- [ ] how to list accounts
-- [ ] how to store who is logged in
-- [ ] send message
+## to do from pset specs
+- [x] Create an account. You must supply a unique user name.
+- [ ] List accounts (or a subset of the accounts, by text wildcard) like 10 or something
+- [x] Send a message to a recipient. 
+- [ ] If the recipient is logged in, deliver immediately; otherwise queue the message and deliver on demand. 
+- [x] If the message is sent to someone who isn't a user, return an error message
+- [ ] Deliver undelivered messages to a particular user
+- [x] Delete an account. 
+- [ ] You will need to specify the semantics of what happens if you attempt to delete an account that contains undelivered message.
 
 operations
 1. create account
@@ -28,3 +31,5 @@ operations
 
 ## useful commands
 - netstat -an, which will show the current state of all sockets
+
+## tech debt

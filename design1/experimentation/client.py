@@ -2,7 +2,7 @@
 
 import socket
 HOST = '127.0.0.1'
-PORT = 6000
+PORT = 6009
 
 # op codes
 # 0: create account
@@ -10,6 +10,8 @@ PORT = 6000
 # 2: send message
 # 3: logout
 # 4: delete account
+
+# TODO: take care of empty messages
 
 # ==================================
 
@@ -43,23 +45,48 @@ class Client:
         sent = self.conn.sendall(bmsg)
         print(f'Message sent, {len(msg)} bytes transmitted')
 
-        # wait for response
-        data = self.conn.recv(1024).decode('ascii') 
-        status, err_msg = data.split('%')
-        if status == '0':
-            print('Success')
-            return True
-        else:
-            print(f'Error {status}: {err_msg}')
-            return False
+        # wait for response (indicates success or not)
+        return self.receive_message()
+    
+    def receive_message(self):
+        data = self.conn.recv(1024).decode('ascii')
+        print(data)
+        isError, first, msg = data.split('%')
+        
+        # first can be status or sender
+        # msg can be error message or text message
+        if isError == '0':
+            if first == '0':
+                print('Success')
+                return True
+            else:
+                print(f'Error {first}: {msg}')
+                return False
+        elif isError == '1':
+            print(f'[From {first}] {msg}')
+        pass
     
     def query_message(self):
-        print('Who would you like to send a message to?')
-        target = input()
-        print('What is your message?')
-        msg = input()
-        self.send_message(2, self.username, msg, target)
-        pass
+        valid = False
+        while valid is False:
+            print('Who would you like to send a message to?')
+            target = input()
+            if (target == '') or (' ' in target):
+                print(f'Username "{target}" is invalid, please try again.')
+            else:
+                valid = True
+        
+        valid = False
+        while valid is False:
+            print('What is your message?')
+            msg = input()
+            if msg == '':
+                print('Message must not be empty')
+            else:
+                valid = True
+
+        success = self.send_message(2, self.username, msg, target)
+        
     
     def welcome_message(self):
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
