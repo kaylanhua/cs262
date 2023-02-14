@@ -2,17 +2,17 @@
 import socket
 
 # import thread module
-from _thread import *
+from _thread import start_new_thread
 import threading
 
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()
 HOST = "127.0.0.1"
-PORT = 6010
+PORT = 6022
 
-print_lock = threading.Lock()
+# print_lock = threading.Lock()
 
-def create_account(self, username, connection):
+def create_account(username, connection):
     print(f"{username} has created an account")
     login(username, connection)
         
@@ -33,9 +33,9 @@ def threaded(c):
         print('Data (raw):', data, ' len:', len(data))
         
         if not data:
-            print('Bye')
+            print('HOMIE DEPARTURE ALERT')
             # lock released on exit
-            print_lock.release()
+            # print_lock.release()
             break
         
         data = data.decode('ascii') 
@@ -43,10 +43,6 @@ def threaded(c):
         
         opcode, username, target, message = data.split('%')
         print(opcode, username, target, message)
-
-        # recipient = '0'  # defaults to sender
-        # arg1 = username  # sender or status
-        # arg2 = message   # or err_msg
         
         status = 0 # not an error
         text = ''
@@ -62,25 +58,26 @@ def threaded(c):
             login(username, c)
             
             # TODO: receive queue of msgs
-            # if messages.has_key(username):
-            #     for message in messages[username]:
-            #         recipient = '1'
-            #         # send_message(1, username, message)
-            
+            if username in messages:
+                for message in messages[username]:
+                    sessions[username].sendall(message.encode('ascii'))
+                messages.pop(username)
         elif opcode == '2': # send message
             if target not in sessions.keys():
+                # TODO: raise exception instead
                 status = 1
                 text = (f"User {target} does not exist")
             else: 
                 toSend = username+'%'+message
-                if sessions == None:
+                if sessions[target] == None: # target is not logged in
                     # user not logged in
-                    if not messages.has_key(target):
+                    if target not in messages:
                         messages[target] = []
                     messages[target].append(toSend)
                 else:
                     # send message to target
-                    sessions[target].send(toSend)
+                    print(f"someone is trying to send a message to {target}")
+                    sessions[target].sendall(toSend.encode('ascii'))
                     # recipient = '1'
                     # arg1 = target
                     # arg2 = toSend
@@ -94,13 +91,10 @@ def threaded(c):
             messages.pop(username)
             text = "Your account has been deleted."
         elif opcode == '5': # list all users
-            text = str(sessions.keys())
+            text = str(list(sessions.keys()))
+            text = 'all accounts' + '%' + text
+            c.sendall(text.encode('ascii'))
             # send_message(0, username, message)
-        
-        data = f"{status}%{text}"
-        c.send(data.encode('ascii')) 
-        
-        # different case: sessions[target].send()
 
     # connection closed
     c.close()
@@ -115,7 +109,6 @@ def Main():
     # put the socket into listening mode
     s.listen(5)
     print("socket is listening")
-    print("-------------------")
 
     # a forever loop until client wants to exit
     while True:
@@ -124,7 +117,8 @@ def Main():
         c, addr = s.accept()
 
         # lock acquired by client
-        print_lock.acquire()
+        # print_lock.acquire()
+        print("-------------------")
         print("NEW HOMIE ALERT")
         print('Connected to :', addr[0], ':', addr[1])
 

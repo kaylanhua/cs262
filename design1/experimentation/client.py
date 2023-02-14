@@ -46,25 +46,25 @@ class Client:
         print(f'Message sent, {len(msg)} bytes transmitted')
 
         # wait for response (indicates success or not)
-        return self.receive_message()
+        # return self.receive_message()
     
-    def receive_message(self):
-        data = self.conn.recv(1024).decode('ascii')
-        print(data)
-        isError, first, msg = data.split('%')
+    # def receive_message(self):
+    #     data = self.conn.recv(1024).decode('ascii')
+    #     print(data)
+    #     isError, first, msg = data.split('%')
         
-        # first can be status or sender
-        # msg can be error message or text message
-        if isError == '0':
-            if first == '0':
-                print('Success')
-                return True
-            else:
-                print(f'Error {first}: {msg}')
-                return False
-        elif isError == '1':
-            print(f'[From {first}] {msg}')
-        pass
+    #     # first can be status or sender
+    #     # msg can be error message or text message
+    #     if isError == '0':
+    #         if first == '0':
+    #             print('Success')
+    #             return True
+    #         else:
+    #             print(f'Error {first}: {msg}')
+    #             return False
+    #     elif isError == '1':
+    #         print(f'[From {first}] {msg}')
+    #     pass
     
     def query_message(self):
         valid = False
