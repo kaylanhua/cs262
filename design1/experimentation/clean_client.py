@@ -51,6 +51,8 @@ def threaded_receive(conn):
         data = data.decode('ascii')
         sender, message = data.split('%') 
         print(f"[{sender}] {message}")
+    
+    
 
 
 def welcome_menu():

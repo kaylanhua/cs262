@@ -88,7 +88,8 @@ def threaded(c):
             # send_message(0, username, response)
         elif opcode == '4': # delete account
             sessions.pop(username)
-            messages.pop(username)
+            if username in messages:
+                messages.pop(username)
             text = "Your account has been deleted."
         elif opcode == '5': # list all users
             text = str(list(sessions.keys()))
