@@ -7,6 +7,7 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 import time 
+from _thread import start_new_thread
 
 from clean_client import get_username, get_message
 
@@ -26,8 +27,8 @@ class Client:
                 opcode=opcode, username=self.username, target=target, message=message
                 )
             response = stub.ReceiveMessageFromClient(request)
-        
-        print(response.message)
+        if response.message:
+            print(response.message)
         return response
 
     def welcome_menu(self):
@@ -64,9 +65,15 @@ class Client:
         exit()
 
 
+def threaded_receive(client):
+    while True:
+        client.send_message('6')
+        time.sleep(1)
+
 def Main():
     
     client = Client(host, port)
+    start_new_thread(threaded_receive, (client,))
     client.welcome_menu()
     
     while True:
@@ -89,6 +96,8 @@ def Main():
             client.send_message('5')
         else: 
             print('Invalid input. Please try again.')
+        
+        
 
 
 if __name__ == '__main__':

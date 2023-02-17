@@ -3,8 +3,6 @@ syntax = "proto3";
 package messages;
 
 // The request message containing the user's name.
-// command to run from experimentation
-// python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./messages.proto
 message MessageToServer {
     string opcode = 1;
     string username = 5;
@@ -12,30 +10,13 @@ message MessageToServer {
     string message = 4;
 }
 
-// The response messages containing the greetings
-message MessageToClient {
-    string usernameOrStatus = 1;
-    string message = 2; 
-}
-
-// Dont need this
+// Universal container for the response messages sent by the server after having been queried by the client
 message ServerLog {
     string message = 1; 
 }
 
-
-// The service definition.
+// The service definition of the main Server
 service Server {
-    // Sends a greeting
+    // Receives a message from the client and sends some log back
     rpc ReceiveMessageFromClient (MessageToServer) returns (ServerLog) {}
-    rpc SendMessageToClient (MessageToServer) returns (MessageToClient) {}
-    rpc LogOut (MessageToServer) returns (ServerLog) {}
-    rpc LogIn (MessageToServer) returns (ServerLog) {}
-    rpc QueueMessage (MessageToServer) returns (ServerLog) {}
-    rpc CreateAccount (MessageToServer) returns (ServerLog) {}
-    rpc DeleteAccount (MessageToServer) returns (MessageToClient) {}
-    rpc SeeAllAccounts (MessageToServer) returns (MessageToClient) {}
-
-    // this is for testing
-    rpc Test (ServerLog) returns (ServerLog) {}
 }

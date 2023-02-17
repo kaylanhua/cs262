@@ -1,6 +1,8 @@
 # engineering notebook
-students: kayla lanting huang and thomas mitchell cobley
-Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
+kayla lanting huang and thomas mitchell cobley
+
+---
+**Instructions:** Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
 ## to do from pset specs
 - [x] Create an account. You must supply a unique user name.
@@ -8,11 +10,12 @@ Keep a notebook for what decisions you made, and why you made them the way you d
 - [x] Send a message to a recipient. 
 - [x] If the recipient is logged in, deliver immediately; otherwise queue the message and deliver on demand. 
 - [x] If the message is sent to someone who isn't a user, return an error message
-- [ ] Deliver undelivered messages to a particular user
+- [x] Deliver undelivered messages to a particular user
 - [x] Delete an account. 
 - [ ] You will need to specify the semantics of what happens if you attempt to delete an account that contains undelivered message.
 - [ ] make tests
 
+## part two of the assignment
 - [ ] implement grpc
 
 ### edge cases
@@ -21,7 +24,7 @@ Keep a notebook for what decisions you made, and why you made them the way you d
 - [x] talking on multiple machines
 - [ ] fix the threading issues (joining the threads)
 - [x] not allowing percentage signs
-- [ ] splitting messages sent at once to client (preventing it from being interpreted as one long message)
+- [x] splitting messages sent at once to client (preventing it from being interpreted as one long message)
 
 operations
 1. create account
@@ -33,7 +36,7 @@ operations
 
 ---
 
-## references
+### references
 - [python sockets guide](https://realpython.com/python-sockets/#echo-client-and-server)
 - [socket programming HOWTO](https://docs.python.org/3/howto/sockets.html)
 - [protoc installation](https://grpc.io/docs/protoc-installation/)
@@ -44,5 +47,19 @@ operations
 ## useful commands
 - netstat -an, which will show the current state of all sockets
 - ipconfig getifaddr en0 to get ip addr
+- [run from the experimentation folder to generate proto files] python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./messages.proto
+
 
 ## tech debt
+- [ ] get rid of the extra functions in proto file
+- [ ] testing two clients at once (i.e. that the server is multithreading correctly)
+- [ ] comment all the code well
+
+## engineering decisions to expand on
+- [ ] created a conda environment to install all requisite packages in 
+- [ ] why we used polling in grpc
+- [ ] the operation codes
+- [ ] using percentage signs and piping
+- [ ] how we wrote the test code
+- [ ] user experience tweaks
+- [ ] functions shared between implementations (tradeoff between ease of code changes and the abstraction needed for functions to be used in multiple settings)

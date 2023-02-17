@@ -1,17 +1,4 @@
-# Copyright 2015 gRPC authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-"""The Python implementation of the GRPC helloworld.Greeter server."""
+"""The Python implementation of the GRPC messages.Server server."""
 
 from concurrent import futures
 import logging
@@ -46,11 +33,14 @@ def queue_message(sender, recipient, message):
 
 class Server(messages_pb2_grpc.ServerServicer):
     
-    def send_pending(self, messages, username):
-        toClient = ''
-        if username in messages:
-            info_msg = f"You have {len(messages[username])} new messages since you last logged in:\n"
-            toClient += info_msg
+    def send_pending(self, messages, username, justLoggedIn=False):
+        toClient = None
+        if username in messages and messages[username] is not None:
+            if justLoggedIn:
+                info_msg = f"You have {len(messages[username])} new messages since you last logged in:\n"
+            else:
+                info_msg = f"\nNew message!\n"
+            toClient = info_msg
 
             # TODO: reads may happen together
 
@@ -82,7 +72,7 @@ class Server(messages_pb2_grpc.ServerServicer):
             login(username, True)
             toClient = f"Welcome back, {username}\n"
             # Send undelivered messages, if any
-            toClient += self.send_pending(messages, username)
+            toClient += self.send_pending(messages, username, True)
         
         # SEND MESSAGE    
         elif opcode == '2':
@@ -96,6 +86,7 @@ class Server(messages_pb2_grpc.ServerServicer):
                 else:
                     # send message to target
                     print(f"someone is trying to send a message to {target}")
+                    queue_message(username, target, message)
                     # TODO to_client(target, message, username)
         
         # LOG OUT            
@@ -113,17 +104,13 @@ class Server(messages_pb2_grpc.ServerServicer):
         # LIST ALL USERS    
         elif opcode == '5':
             toClient = "[ALL ACCOUNTS]" + str(list(sessions.keys()))
+        
+        elif opcode == '6':
+            res = self.send_pending(messages, username)
+            if res:
+                toClient = res
 
         return messages_pb2.ServerLog(message=toClient)
-    
-    # def SendMessageToClient(self, request, context):
-    #     return messages_pb2.MessageToClient(usernameOrStatus="0", message="hi")
-    
-    # def QueueMessage(self, request, context):
-    #     return messages_pb2.ServerLog(message="hello %s, you have queued a message" % request.username)
-    
-    # def SeeAllAccounts(self, request, context):
-    #     return messages_pb2.MessageToClient(usernameOrStatus="0", message="all accounts")
     
 
 def serve():
