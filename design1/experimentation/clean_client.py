@@ -53,8 +53,6 @@ def threaded_receive(conn):
         print('Data (decoded):', data, ' len:', len(data))
         sender, message = data.split('%') 
         print(f"[{sender}] {message}")
-    
-    
 
 
 def welcome_menu(client):
@@ -132,7 +130,7 @@ def Main():
         # MENU
         time.sleep(1)
         print('Select an option: 2 for send message, 3 for log out, 4 for delete account, 5 for list all users.')
-        op = input()
+        op = input().replace(" ", "")
         if op == "2":
             client.query_message()    
         elif op == "3":
@@ -148,6 +146,8 @@ def Main():
             client.send_message('5', client.username)
         else: 
             print('Invalid input. Please try again.')
+    
+    
 
 
 if __name__ == '__main__':
