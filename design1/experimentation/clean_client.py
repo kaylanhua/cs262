@@ -1,10 +1,11 @@
 # Import socket module
 import socket
 from _thread import start_new_thread
+import time 
 
 MESSAGE_MAX_LENGTH_BYTES = 1000
 # local host IP '127.0.0.1'
-host = '127.0.0.1'
+host = '10.31.4.3'
 
 # Define the port on which you want to connect
 port = 6022
@@ -40,7 +41,7 @@ def threaded_receive(conn):
     while True:
         # data received from client
         data = conn.recv(1024)
-        print('Data (raw):', data, ' len:', len(data))
+        # print('Data (raw):', data, ' len:', len(data))
         
         if not data:
             print('Bye')
@@ -49,22 +50,30 @@ def threaded_receive(conn):
             break
         
         data = data.decode('ascii')
+        print('Data (decoded):', data, ' len:', len(data))
         sender, message = data.split('%') 
         print(f"[{sender}] {message}")
     
     
 
 
-def welcome_menu():
+def welcome_menu(client):
     print('Welcome! Type 0 to create an account, type 1 to log in.')
 
     valid = False
     while valid is False:
         response = input()
-        if response == '0' or response == '1':
+        if response == '0' :
             # create account or login (same effect)
             print('Please enter your username.')
-            return get_username()
+            client.create_account(get_username())
+            valid = True
+            
+        elif response == '1':
+            print('Please enter your username.')
+            client.login(get_username())
+            valid = True
+
         else:
             print('Invalid input. Please try again.')
 
@@ -78,33 +87,22 @@ class Client:
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.conn.connect((host, port))
 
-        
+    def create_account(self, username):
+        self.username = username
+        # TODO: handle failure
+        self.send_message('0', username)
+
     def login(self, username):
         self.username = username
-        # TODO: try again on failure
+        # TODO: handle failure
         self.send_message('1', username)
-
 
     def send_message(self, opcode, username, message=None, target=None):
         msg = f'{opcode}%{username}%{target}%{message}'
-        print(msg)
         bmsg = msg.encode('ascii')
         # TODO: catch exception if sending fails (and retry?)
         self.conn.sendall(bmsg)
         print(f'Message sent, {len(msg)} bytes transmitted')
-
-        # wait for response (indicates success or not)
-        # data = self.conn.recv(1024).decode('ascii')
-        # print(data)
-        # status, text = data.split('%')
-        
-        # # first can be status or sender
-        # # msg can be error message or text message
-        # if status == '0':
-        #     print('Success')
-        # else:
-        #     print(f'Error {text}')
-    
 
     def query_message(self):
         print('Please enter username of recipient.')
@@ -124,17 +122,15 @@ def Main():
 
     client = Client(host, port)
 
-    # get client username
-    username = welcome_menu()
-
-    # login / create account
-    client.login(username)
-
     start_new_thread(threaded_receive, (client.conn,))
+
+    # log in / create account
+    welcome_menu(client)
 
     while True:
         
         # MENU
+        time.sleep(1)
         print('Select an option: 2 for send message, 3 for log out, 4 for delete account, 5 for list all users.')
         op = input()
         if op == "2":
