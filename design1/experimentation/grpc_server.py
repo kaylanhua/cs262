@@ -7,9 +7,12 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 
+port = '50051'
 sessions = dict()   # manages which users are currently logged in, as in the socket server
 messages = dict()   # manages which users have outstanding messages which are yet to be delivered
 
+
+# functions taken from clean_server.py
 def create_account(username, connection):
     sessions[username] = connection
     print(f"{username} has created an account")
@@ -31,6 +34,10 @@ def queue_message(sender, recipient, message):
 class Server(messages_pb2_grpc.ServerServicer):
     
     def send_pending(self, messages, username, justLoggedIn=False):
+        '''
+        sends outstanding messages to the client who has just queried the server
+        applies for a backlog of messages (seen upon log in) and real time messages (seen while logged in)
+        '''
         toClient = None
         if username in messages and messages[username] is not None:
             if justLoggedIn:
@@ -45,12 +52,15 @@ class Server(messages_pb2_grpc.ServerServicer):
         return toClient
     
     def ReceiveMessageFromClient(self, request, context):
+        # see the request for debugging purposes
         print(str(request))
+        
+        # parse request structure
         opcode = request.opcode
         username = request.username
-        target = request.target
-        message = request.message
-        toClient = ''
+        target = request.target      # optional
+        message = request.message    # optional
+        toClient = ''                # final message to be sent to the client who queried the server
         
         # CREATE ACCOUNT
         if opcode == '0':
@@ -68,7 +78,9 @@ class Server(messages_pb2_grpc.ServerServicer):
             login(username, True)
             toClient = f"Welcome back, {username}\n"
             # Send undelivered messages, if any
-            toClient += self.send_pending(messages, username, True)
+            pending = self.send_pending(messages, username, True)
+            if pending:
+                toClient += pending
         
         # SEND MESSAGE    
         elif opcode == '2':
@@ -101,6 +113,8 @@ class Server(messages_pb2_grpc.ServerServicer):
         elif opcode == '5':
             toClient = "[ALL ACCOUNTS]" + str(list(sessions.keys()))
         
+        # QUERYING FOR MESSAGES
+        # this is never explicitly chosen by users, this code is used by the client to automatically listen for incoming messages
         elif opcode == '6':
             res = self.send_pending(messages, username)
             if res:
@@ -110,7 +124,7 @@ class Server(messages_pb2_grpc.ServerServicer):
     
 
 def serve():
-    port = '50051'
+    # basic gRPC server set up using info from the auto generated messages_pb2_grpc
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     messages_pb2_grpc.add_ServerServicer_to_server(Server(), server)
     server.add_insecure_port('[::]:' + port)

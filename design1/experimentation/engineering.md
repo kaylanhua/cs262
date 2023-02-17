@@ -1,7 +1,6 @@
 # engineering notebook
 kayla lanting huang and thomas mitchell cobley
 
----
 **Instructions:** Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
 ## to do from pset specs
@@ -13,10 +12,10 @@ kayla lanting huang and thomas mitchell cobley
 - [x] Deliver undelivered messages to a particular user
 - [x] Delete an account. 
 - [ ] You will need to specify the semantics of what happens if you attempt to delete an account that contains undelivered message.
-- [ ] make tests
+- [ ] Make tests
 
 ## part two of the assignment
-- [ ] implement grpc
+- [x] Implement grpc
 
 ### edge cases
 - [x] when someone says '2 ' instead of '2' (stripped spaces)
@@ -41,6 +40,7 @@ operations
 - [socket programming HOWTO](https://docs.python.org/3/howto/sockets.html)
 - [protoc installation](https://grpc.io/docs/protoc-installation/)
 - [protobuf compiling](https://grpc.io/docs/protoc-installation/)
+- information on [bidirectional streams in grpc](https://levelup.gitconnected.com/grpc-how-to-make-bi-directional-streaming-calls-70b4a0569b5b), though we didn't end up using it
 
 ---
 
@@ -63,3 +63,10 @@ operations
 - [ ] how we wrote the test code
 - [ ] user experience tweaks
 - [ ] functions shared between implementations (tradeoff between ease of code changes and the abstraction needed for functions to be used in multiple settings)
+
+
+## future work
+### grpc section
+- could, instead of polling, wait for batches instead (i.e. longer wait time between polling)
+- wait for users to be done typing (or wait for the next menu reprisal) to show new messages, as opposed to consistent polling
+- modularize a lot of the shared functions and abstract out the components which are agnostic to the protocol

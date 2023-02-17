@@ -60,7 +60,7 @@ def welcome_menu(client):
 
     valid = False
     while valid is False:
-        response = input()
+        response = input().replace(" ", "")
         if response == '0' :
             # create account or login (same effect)
             print('Please enter your username.')
