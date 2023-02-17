@@ -7,10 +7,8 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 
-# from clean_server import create_account, login, send_pending
-
-sessions = dict()
-messages = dict()
+sessions = dict()   # manages which users are currently logged in, as in the socket server
+messages = dict()   # manages which users have outstanding messages which are yet to be delivered
 
 def create_account(username, connection):
     sessions[username] = connection
@@ -22,7 +20,6 @@ def login(username, connection):
     
 def logout(username):
     sessions[username] = None
-    # self.socket.close()
     print(f"{username} has logged out")
 
 def queue_message(sender, recipient, message):
@@ -42,8 +39,6 @@ class Server(messages_pb2_grpc.ServerServicer):
                 info_msg = f"\nNew message!\n"
             toClient = info_msg
 
-            # TODO: reads may happen together
-
             for sender, message in messages[username]:
                 toClient += f"[{sender}] {message}\n"
             messages.pop(username)
@@ -56,6 +51,7 @@ class Server(messages_pb2_grpc.ServerServicer):
         target = request.target
         message = request.message
         toClient = ''
+        
         # CREATE ACCOUNT
         if opcode == '0':
             if username in sessions:
