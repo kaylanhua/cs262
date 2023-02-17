@@ -5,7 +5,7 @@ import time
 
 MESSAGE_MAX_LENGTH_BYTES = 1000
 # local host IP '127.0.0.1'
-host = '10.31.4.3'
+host = '172.20.10.3'
 
 # Define the port on which you want to connect
 port = 6022
@@ -153,3 +153,5 @@ def Main():
 if __name__ == '__main__':
     print("Client Started")
     Main()
+
+

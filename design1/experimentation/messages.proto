@@ -3,10 +3,11 @@ syntax = "proto3";
 package messages;
 
 // The request message containing the user's name.
+// command to run from experimentation
 // python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./messages.proto
 message MessageToServer {
     string opcode = 1;
-    string username = 2;
+    string username = 5;
     string target = 3;
     string message = 4;
 }
@@ -17,7 +18,7 @@ message MessageToClient {
     string message = 2; 
 }
 
-// Done
+// Dont need this
 message ServerLog {
     string message = 1; 
 }
@@ -34,4 +35,7 @@ service Server {
     rpc CreateAccount (MessageToServer) returns (ServerLog) {}
     rpc DeleteAccount (MessageToServer) returns (MessageToClient) {}
     rpc SeeAllAccounts (MessageToServer) returns (MessageToClient) {}
+
+    // this is for testing
+    rpc Test (ServerLog) returns (ServerLog) {}
 }

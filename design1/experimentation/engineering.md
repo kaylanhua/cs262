@@ -11,14 +11,17 @@ Keep a notebook for what decisions you made, and why you made them the way you d
 - [ ] Deliver undelivered messages to a particular user
 - [x] Delete an account. 
 - [ ] You will need to specify the semantics of what happens if you attempt to delete an account that contains undelivered message.
+- [ ] make tests
 
-edge cases
+- [ ] implement grpc
+
+### edge cases
 - [x] when someone says '2 ' instead of '2' (stripped spaces)
 - [ ] making logged in / delivery thread safe
 - [x] talking on multiple machines
 - [ ] fix the threading issues (joining the threads)
-- [ ] make tests
-- [ ] 
+- [x] not allowing percentage signs
+- [ ] splitting messages sent at once to client (preventing it from being interpreted as one long message)
 
 operations
 1. create account
