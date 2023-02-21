@@ -3,7 +3,9 @@
 **Instructions:** Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
 ## Set Up Decisions
-There were a few key decisions we made when setting up the code base. Mainly, we decided to modularize all the work within a conda environment, particularly because the gRPC unit would require so many outside packages and version control might present a general issue. 
+There were a few key decisions we made when setting up the code base. Mainly, we decided to modularize all the work within a conda environment, particularly because the gRPC unit would require so many outside packages and version control might present a general issue. The dependencies downloaded into the conda environment are preserved in the environment.yml file. 
+
+We also used a Github repository and VSCode Live Share to maintain versions throughout the creation of the code base.
 
 ## Wire Protocol Design Decisions
 A few key decisions
@@ -12,6 +14,12 @@ A few key decisions
     - Messages sent to the server from the client is of the form '{opcode}%{username}%{target}%{message}'.
     - This means that users cannot input a username or message which contains any of our separators (mainly spaces, percentages, and pipes) and we check for that when querying the user for an input. 
     - Piping is used to separate when multiple messages are sent separately from the same client to the server but received together. The pipe then separates these messages, in this edge case, into separate packets. 
+- We included who sent the message in every packet (string) we sent to the server. This makes it easier for the server to be about certain who the client claims to be. Though this is technically redundant information, it was also very helpful for testing as we could print easily on the server side and it provided every packet with complete information. 
+- Instead of asking the client to remember the operation codes, we used the terminal to send out a menu querying the user for numerical input.
+- Used a thread to listen on the client side for any information transmitted from the server side. 
+- One thread per client was used on the server side. This was relatively intuitive since each of the clients have to maintain their own indpendent line of communication with the server. However, we could have considered batching, but this would have to be a future consideration as we haven't scaled to the point of needing functionality of that caliber. 
+- If the user already exists when someone tries to create an account, we just automatically log that person into the account. We thought this would provide a better user experience, though it would not work great at scale (i.e. many people have the same name and might try to claim the same username).
+- When someone queries for all users who are logged in, we list all the users who are logged in, not just some sample of them. We thought this to be more constructive, since the idea of listing the accounts which are active is to figure out who you can possibly talk to at a given moment. 
 - We made sure to lock all threads inside of the server so that no thread could alter the shared data structures when others were trying to access it. 
 
 ## GRPC Engineering Decisions
@@ -24,6 +32,7 @@ More key decisions
 ## User Experience 
 - We chose to colorize the new messages that were coming in on the client side from other clients so that they are easier to differentiate from the menu text.
 - All user messages come in with [ sender_name ] in brackets (like shown) before the message so that there is no extra bulk in the message.
+- Messages show up in the recipient's terminal immediately even if they are in the middle of responding to the customer service like menu. This does not affect their response in the menu or the packet that they end up sending to the server, but it does allow them to immediately see what someone has said to them, which we thought to be important. 
 
 
 ## Testing Decisions

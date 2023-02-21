@@ -8,7 +8,7 @@ import threading
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()  # stores who has outstanding messages
 HOST = "localhost"   # open to broader network to connect across machines
-PORT = 6027
+PORT = 6028
 
 server_lock = threading.Lock()
 

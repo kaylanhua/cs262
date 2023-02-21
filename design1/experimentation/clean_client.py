@@ -25,10 +25,11 @@ host = 'localhost'
 # host = '10.250.94.109'        # or replace w/ external machine's ip address
 
 # Define the port on which you want to connect
-port = 6027
+port = 6028
 
 # disallowed characters (used in packet encoding)
 disallowed_chars = ['%', '|', ' ']
+log_out = False
 
 logged_in = False
 
@@ -65,6 +66,7 @@ def get_message():
 
 # thread function
 def threaded_receive(conn):
+    global log_out
     '''Thread function for receiving messages from server.'''
     while True:
         # data received from client
@@ -83,12 +85,14 @@ def threaded_receive(conn):
                     break
                 elif "SERVER%Someone else" in data:
                     print('Someone else is logged in with that username. Please try again.')
+                    log_out = True
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
                     os._exit(1)
                 elif "SERVER%Account does not exist" in data:
                     print('Account does not exist. Please try again.')
                     print('____')
+                    log_out = True
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
                     os._exit(1)
@@ -116,8 +120,8 @@ def welcome_menu(client):
  \ \__/".~\_\  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_____\ 
   \/_/   \/_/   \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_____/ 
                                                                                   
-''' + bcolors.ENDC )
-    print('Welcome! Type 0 to create an account, type 1 to log in.')
+''' + bcolors.ENDC)
+    print(bcolors.OKBLUE + 'Welcome! Type 0 to create an account, type 1 to log in.' + bcolors.ENDC )
 
     valid = False
     while valid is False:
@@ -189,7 +193,7 @@ class Client:
 
 def Main():
     '''Main messaging loop.'''
-
+    global log_out
     # create new client instance
     client = Client(host, port)
 
@@ -198,10 +202,12 @@ def Main():
 
     # log in / create account
     welcome_menu(client)
-
     while True:
         # sleep for a moment to improve user experience
         time.sleep(0.5)
+        
+        if log_out:
+            exit()
 
         # show menu to user
         print('Select an option: 2 for send message, 3 for log out, 4 for delete account, 5 for list all users.')
