@@ -2,20 +2,28 @@
 import socket
 from _thread import start_new_thread
 import time 
+import select
 
-MESSAGE_MAX_LENGTH_BYTES = 1000
+MESSAGE_MAX_LENGTH_BYTES = 800
 # local host IP '127.0.0.1'
-host = '10.31.4.3'
+host = '127.0.0.1'
 
 # Define the port on which you want to connect
-port = 6022
+port = 6023
+
+# disallowed characters (used in packet encoding)
+disallowed_chars = ['%', '|', ' ']
 
 def get_username():
     valid = False
     while valid is False:
         username = input()
-        if (username == '') or (' ' in username) or ('%' in username):
-            print(f'Username "{username}" is invalid, please try again.')
+        for char in disallowed_chars:
+            if char in username:
+                print(f'Username "{username}" is invalid (must not contain "{char}"), please try again.')
+                break
+        if (len(username) > 20):
+            print(f'Username must not be longer than 20 characters, please try again.')
         else:
             valid = True
     return username
@@ -35,26 +43,35 @@ def get_message():
     return message
 
 
-
 # thread function
 def threaded_receive(conn):
     while True:
         # data received from client
-        data = conn.recv(1024)
-        # print('Data (raw):', data, ' len:', len(data))
-        
-        if not data:
-            print('Bye')
-            # lock released on exit
-            # print_lock.release()
+        try:
+            ready = select.select([conn], [], [], 1)
+            if ready[0]:
+                data = conn.recv(1024)    
+
+                # print('Data (raw):', data, ' len:', len(data))
+                
+                if not data:
+                    print('Bye')
+                    # lock released on exit
+                    # print_lock.release()
+                    break
+                
+                data = data.decode('ascii')
+                print('Data (decoded):', data, ' len:', len(data))
+                packets = data.split('|')
+                for packet in packets:
+                    if packet == '':
+                        continue
+                    sender, message = packet.split('%')
+                    print(f"[{sender}] {message}")
+        except Exception as e:
+            # Error occurs when parent thread closes connection: 
+            #   not a problem as we are logging out anyway, so ignore
             break
-        
-        data = data.decode('ascii')
-        print('Data (decoded):', data, ' len:', len(data))
-        sender, message = data.split('%') 
-        print(f"[{sender}] {message}")
-    
-    
 
 
 def welcome_menu(client):
@@ -110,12 +127,14 @@ class Client:
         print('Please enter your message.')
         message = get_message()
         self.send_message(2, self.username, message, target)
-
      
     def logout(self):
+        self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
         print('You have been logged out. Exiting...')
-        exit()
+
+    def list_all_users(self):
+        self.send_message('5', self.username)
 
 def Main():
 
@@ -139,13 +158,15 @@ def Main():
             # logout
             client.send_message('3', client.username)
             client.logout()
+            exit()
         elif op == "4":
             # delete account
             client.send_message('4', client.username)
             client.logout()
+            exit()
         elif op == "5":
             # list all users
-            client.send_message('5', client.username)
+            client.list_all_users()
         else: 
             print('Invalid input. Please try again.')
 

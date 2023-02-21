@@ -8,9 +8,11 @@ import threading
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()
 HOST = "0.0.0.0"
-PORT = 6022
+PORT = 6023
 
 # print_lock = threading.Lock()
+
+# TODO: locking 
 
 def create_account(username, connection):
     sessions[username] = connection
@@ -42,9 +44,10 @@ def send_pending(messages, username):
         messages.pop(username)
 
 def to_client(recipient, message, sender="SERVER"):
-    data = f"{sender}%{message}"
+    data = f"{sender}%{message}|"
+    print('sending to', recipient, ':', data)
+    
     sessions[recipient].sendall(data.encode('ascii'))
-    print('sent to', recipient, ':', data)
 
 # thread function
 def threaded(c):
@@ -117,33 +120,49 @@ def threaded(c):
     c.close()
 
 
-def Main():
-    
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind((HOST, PORT))
-    print("socket binded to port", PORT)
+class Server:
 
-    # put the socket into listening mode
-    s.listen(5)
-    print("socket is listening")
+    def __init__(self, testing=False):
+        self.testing = testing
 
-    # a forever loop until client wants to exit
-    while True:
+    def start(self, host, port):
+        
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.bind((host, port))
+        print("socket binded to port", port)
 
-        # establish connection with client
-        c, addr = s.accept()
+        # put the socket into listening mode
+        self.socket.listen(5)
+        print("socket is listening")
 
-        # lock acquired by client
-        # print_lock.acquire()
-        print("-------------------")
-        print("NEW HOMIE ALERT")
-        print('Connected to :', addr[0], ':', addr[1])
+        # a forever loop until client wants to exit
+        while True:
 
-        # Start a new thread and return its identifier
-        start_new_thread(threaded, (c,))
-    
-    s.close()
+            try:
+                # establish connection with client
+                c, addr = self.socket.accept()
+            except ConnectionAbortedError as e:
+                if self.testing:
+                    print("Connection aborted")
+                    break
+                else:
+                    raise e
+
+            # lock acquired by client
+            # print_lock.acquire()
+            print("-------------------")
+            print("NEW HOMIE ALERT")
+            print('Connected to :', addr[0], ':', addr[1])
+
+            # Start a new thread and return its identifier
+            start_new_thread(threaded, (c,))
+        
+        self.socket.close()
+
+    def stop(self):
+        self.socket.close()
 
 
 if __name__ == '__main__':
-    Main()
+    server = Server()
+    server.start(HOST, PORT)
