@@ -13,6 +13,8 @@ kayla lanting huang and thomas mitchell cobley
 - [x] Delete an account. 
 - [ ] You will need to specify the semantics of what happens if you attempt to delete an account that contains undelivered message.
 - [ ] Make tests
+- [ ] Write configuration/set up instructions
+- [ ] Write documentation
 
 ## part two of the assignment
 - [x] Implement grpc
@@ -21,10 +23,11 @@ kayla lanting huang and thomas mitchell cobley
 - [x] when someone says '2 ' instead of '2' (stripped spaces)
 - [ ] making logged in / delivery thread safe
 - [x] talking on multiple machines
-- [ ] fix the threading issues (joining the threads)
+- [x] fix the threading issues (joining the threads)
 - [x] not allowing percentage signs
 - [x] splitting messages sent at once to client (preventing it from being interpreted as one long message)
-- [ ] when user logs in, the message queue sends everything in the queue, not just the first one
+- [x] when user logs in, the message queue sends everything in the queue, not just the first one
+- [ ] double logging in
 
 operations
 1. create account
