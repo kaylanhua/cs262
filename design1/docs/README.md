@@ -4,6 +4,7 @@ project members: kayla huang and tom cobley
 ## file structure
 The relevant file structure for this project looks like the following:
 
+```
 design1
 ├── socket                  # Non gRPC chat server code 
 │   ├── server.py          
@@ -22,6 +23,7 @@ design1
 │   ├── project_specs.md    # Specs for future reference (from Canvas)
 │   └── README.md           # instructions for set up
 └── environment.yml         # dependencies
+```
 
 ## Running non-gRPC code
 Prerequisites:
