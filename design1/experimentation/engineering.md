@@ -66,6 +66,9 @@ operations
 
 
 ## future work
+### general case
+- when someone logs out, bring them back to the "landing page"
+
 ### grpc section
 - could, instead of polling, wait for batches instead (i.e. longer wait time between polling)
 - wait for users to be done typing (or wait for the next menu reprisal) to show new messages, as opposed to consistent polling

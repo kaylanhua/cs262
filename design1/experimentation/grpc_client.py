@@ -32,7 +32,10 @@ class Client:
         return response
 
     def welcome_menu(self):
-        print('Welcome! Type 0 to create an account, type 1 to log in.')
+        print("------------------")
+        print("ⓦ ⓔ ⓛ ⓒ ⓞ ⓜ ⓔ ​​​​​")
+        print("------------------")
+        print('Home Page | Type 0 to create an account or 1 to log in.')
 
         valid = False
         while valid is False:

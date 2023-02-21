@@ -3,29 +3,30 @@ import socket
 
 # import thread module
 from _thread import start_new_thread
-import threading
 
 sessions = dict()  # who is logged in (usernames: connection | None)
-messages = dict()
-HOST = "0.0.0.0"
+messages = dict()  # stores who has outstanding messages
+HOST = "0.0.0.0"   # open to broader network to connect across machines
 PORT = 6022
 
-# print_lock = threading.Lock()
 
 def create_account(username, connection):
+    # connection of all logged in users stored in sessions upon log in or, equivalently, account creation
     sessions[username] = connection
     print(f"{username} has created an account")
         
 def login(username, connection):
+    # user added to the active list (sessions)
     sessions[username] = connection
     print(f"{username} has logged in")
     
 def logout(username):
+    # connection information removed upon log out
     sessions[username] = None
-    # self.socket.close()
     print(f"{username} has logged out")
 
 def queue_message(sender, recipient, message):
+    # messages queued if the intended recipient is not currently logged in 
     if recipient not in messages:
         messages[recipient] = []
     messages[recipient].append((sender, message))
@@ -53,10 +54,9 @@ def threaded(c):
         data = c.recv(1024)
         print('Data (raw):', data, ' len:', len(data))
         
+        # a thread has dropped, likely indicating that a user has logged out or deleted their account
         if not data:
             print('HOMIE DEPARTURE ALERT')
-            # lock released on exit
-            # print_lock.release()
             break
         
         data = data.decode('ascii') 
@@ -68,7 +68,7 @@ def threaded(c):
         # CREATE ACCOUNT
         if opcode == '0':
             if username in sessions:
-                # user alr exists, log in
+                # user already exists, log in
                 login(username, c)
                 # TODO: raise exception, user already exists
             else:
@@ -132,14 +132,13 @@ def Main():
 
         # establish connection with client
         c, addr = s.accept()
-
-        # lock acquired by client
-        # print_lock.acquire()
+        
+        # new connection successfully made
         print("-------------------")
         print("NEW HOMIE ALERT")
         print('Connected to :', addr[0], ':', addr[1])
 
-        # Start a new thread and return its identifier
+        # start a new thread and return its identifier 
         start_new_thread(threaded, (c,))
     
     s.close()
