@@ -12,8 +12,6 @@ PORT = 6025
 
 server_lock = threading.Lock()
 
-# TODO: locking
-
 def create_account(username, connection):
     # connection of all logged in users stored in sessions upon log in or, equivalently, account creation
     sessions[username] = connection
@@ -36,11 +34,13 @@ def queue_message(sender, recipient, message):
     messages[recipient].append((sender, message))
 
 def send_pending(messages, username):
+    '''
+    sends outstanding messages to the client who has just queried the server
+    applies for a backlog of messages (seen upon log in) and real time messages (seen while logged in)
+    '''
     if username in messages:
         info_msg = f"You have {len(messages[username])} new messages since you last logged in:"
         to_client(username, info_msg)
-
-        # TODO: reads may happen together
 
         for sender, message in messages[username]:
             to_client(username, message, sender)
@@ -84,13 +84,16 @@ def threaded(c):
 
             # LOG IN
             elif opcode == '1': # log in
+                if username not in sessions:
+                    # user does not exist, give error
+                    to_client(username, f"Welcome to your new account, {username}.\n")
+                    # TODO
+
                 if sessions[username] is not None:
                     # someone else is logged into the requested account
-                    # with server_lock:
                     to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
                     logout(username)
 
-                # with server_lock:
                 login(username, c)
                 to_client(username, f"Welcome back, {username}")
                 # Send undelivered messages, if any
@@ -125,12 +128,12 @@ def threaded(c):
 
             # LIST ALL USERS
             elif opcode == '5':
-                # to_client(username, str(list(sessions.keys())), "ALL ACCOUNTS")
-                users_logged_in = []
-                for u, c in sessions.items():
-                    if c != None:
-                        users_logged_in.append(u)
-                to_client(username, str(users_logged_in), "ALL ACCOUNTS")
+                to_client(username, str(list(sessions.keys())), "ALL ACCOUNTS")
+                # users_logged_in = []
+                # for u, c in sessions.items():
+                #     if c != None:
+                #         users_logged_in.append(u)
+                # to_client(username, str(users_logged_in), "ALL ACCOUNTS")
 
     # connection closed
     c.close()
