@@ -62,6 +62,8 @@ def threaded_receive(conn):
 
                 data = data.decode('ascii')
                 print('Data (decoded):', data, ' len:', len(data))
+                
+                # Multiple packets may be received at once (separated by '|'), so split them
                 packets = data.split('|')
                 for packet in packets:
                     if packet == '':
