@@ -1,12 +1,12 @@
 # Import socket module
 import socket
 from _thread import start_new_thread
-import time 
+import time
 import select
 
 MESSAGE_MAX_LENGTH_BYTES = 800
 # local host IP '127.0.0.1'
-host = '127.0.0.1'
+host = '172.20.10.3'
 
 # Define the port on which you want to connect
 port = 6023
@@ -50,16 +50,16 @@ def threaded_receive(conn):
         try:
             ready = select.select([conn], [], [], 1)
             if ready[0]:
-                data = conn.recv(1024)    
+                data = conn.recv(1024)
 
                 # print('Data (raw):', data, ' len:', len(data))
-                
+
                 if not data:
                     print('Bye')
                     # lock released on exit
                     # print_lock.release()
                     break
-                
+
                 data = data.decode('ascii')
                 print('Data (decoded):', data, ' len:', len(data))
                 packets = data.split('|')
@@ -69,9 +69,14 @@ def threaded_receive(conn):
                     sender, message = packet.split('%')
                     print(f"[{sender}] {message}")
         except Exception as e:
-            # Error occurs when parent thread closes connection: 
+            # Error occurs when parent thread closes connection:
             #   not a problem as we are logging out anyway, so ignore
             break
+
+        data = data.decode('ascii')
+        print('Data (decoded):', data, ' len:', len(data))
+        sender, message = data.split('%')
+        print(f"[{sender}] {message}")
 
 
 def welcome_menu(client):
@@ -79,13 +84,13 @@ def welcome_menu(client):
 
     valid = False
     while valid is False:
-        response = input()
+        response = input().replace(" ", "")
         if response == '0' :
             # create account or login (same effect)
             print('Please enter your username.')
             client.create_account(get_username())
             valid = True
-            
+
         elif response == '1':
             print('Please enter your username.')
             client.login(get_username())
@@ -96,7 +101,7 @@ def welcome_menu(client):
 
 
 class Client:
-    
+
     def __init__(self, host, port):
         self.host = host
         self.port = port
@@ -127,7 +132,7 @@ class Client:
         print('Please enter your message.')
         message = get_message()
         self.send_message(2, self.username, message, target)
-     
+
     def logout(self):
         self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
@@ -147,13 +152,13 @@ def Main():
     welcome_menu(client)
 
     while True:
-        
+
         # MENU
         time.sleep(1)
         print('Select an option: 2 for send message, 3 for log out, 4 for delete account, 5 for list all users.')
-        op = input()
+        op = input().replace(" ", "")
         if op == "2":
-            client.query_message()    
+            client.query_message()
         elif op == "3":
             # logout
             client.send_message('3', client.username)
@@ -167,8 +172,10 @@ def Main():
         elif op == "5":
             # list all users
             client.list_all_users()
-        else: 
+        else:
             print('Invalid input. Please try again.')
+
+
 
 
 if __name__ == '__main__':
