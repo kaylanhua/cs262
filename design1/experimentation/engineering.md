@@ -24,6 +24,7 @@ kayla lanting huang and thomas mitchell cobley
 - [ ] fix the threading issues (joining the threads)
 - [x] not allowing percentage signs
 - [x] splitting messages sent at once to client (preventing it from being interpreted as one long message)
+- [ ] when user logs in, the message queue sends everything in the queue, not just the first one
 
 operations
 1. create account
@@ -47,13 +48,15 @@ operations
 ## useful commands
 - netstat -an, which will show the current state of all sockets
 - ipconfig getifaddr en0 to get ip addr
-- [run from the experimentation folder to generate proto files] python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./messages.proto
+- command to run from the experimentation folder to generate proto files 
+    - python -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./messages.proto
 
 
 ## tech debt
 - [ ] get rid of the extra functions in proto file
-- [ ] testing two clients at once (i.e. that the server is multithreading correctly)
+- [x] testing two clients at once (i.e. that the server is multithreading correctly)
 - [ ] comment all the code well
+
 
 ## engineering decisions to expand on
 - [ ] created a conda environment to install all requisite packages in 

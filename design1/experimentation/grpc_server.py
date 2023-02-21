@@ -7,6 +7,8 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 
+
+host = 'localhost'
 port = '50051'
 sessions = dict()   # manages which users are currently logged in, as in the socket server
 messages = dict()   # manages which users have outstanding messages which are yet to be delivered
@@ -127,7 +129,7 @@ def serve():
     # basic gRPC server set up using info from the auto generated messages_pb2_grpc
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     messages_pb2_grpc.add_ServerServicer_to_server(Server(), server)
-    server.add_insecure_port('[::]:' + port)
+    server.add_insecure_port(host + ':' + port) 
     server.start()
     print("Server started, listening on " + port)
     server.wait_for_termination()

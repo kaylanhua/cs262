@@ -11,7 +11,7 @@ from _thread import start_new_thread
 
 from clean_client import get_username, get_message
 
-host = 'localhost'
+host = '10.250.94.109'  # put in ip address of external server
 port = '50051'
 
 class Client:
