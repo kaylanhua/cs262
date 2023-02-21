@@ -3,12 +3,14 @@ import socket
 
 # import thread module
 from _thread import start_new_thread
+import threading
 
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()  # stores who has outstanding messages
-HOST = "0.0.0.0"   # open to broader network to connect across machines
-PORT = 6022
+HOST = "localhost"   # open to broader network to connect across machines
+PORT = 6025
 
+server_lock = threading.Lock()
 
 # TODO: locking
 
@@ -55,71 +57,80 @@ def threaded(c):
     while True:
         # data received from client
         data = c.recv(1024)
-        print('Data (raw):', data, ' len:', len(data))
+        with server_lock:
+            print('Data (raw):', data, ' len:', len(data))
 
-        # a thread has dropped, likely indicating that a user has logged out or deleted their account
-        if not data:
-            print('HOMIE DEPARTURE ALERT')
-            break
+            # a thread has dropped, likely indicating that a user has logged out or deleted their account
+            if not data:
+                print('HOMIE DEPARTURE ALERT')
+                break
 
-        data = data.decode('ascii')
-        print(f"The data is: {data}")
+            data = data.decode('ascii')
+            print(f"The data is: {data}")
 
-        opcode, username, target, message = data.split('%')
-        print(opcode, username, target, message)
+            opcode, username, target, message = data.split('%')
+            print(opcode, username, target, message)
 
-        # CREATE ACCOUNT
-        if opcode == '0':
-            if username in sessions:
-                # user already exists, log in
-                login(username, c)
-                # TODO: raise exception, user already exists
-            else:
-                # user does not exist yet, create new user and log in
-                create_account(username, c)
-                to_client(username, f"Welcome to your new account, {username}")
-
-        # LOG IN
-        elif opcode == '1': # log in
-            login(username, c)
-            to_client(username, f"Welcome back, {username}")
-            # Send undelivered messages, if any
-            send_pending(messages, username)
-
-        # SEND MESSAGE
-        elif opcode == '2':
-            if target not in sessions.keys():
-                # TODO: raise exception instead?
-                to_client(username, f"Error: User {target} does not exist. Message could not be sent")
-            else:
-                if sessions[target] == None:
-                    # target is not logged in, queue message
-                    queue_message(username, target, message)
+            # CREATE ACCOUNT
+            if opcode == '0':
+                if username in sessions:
+                    # if user already exists, log in
+                    to_client(username, f"User already exists. Welcome back, {username}.\n")
+                    login(username, c)
                 else:
-                    # send message to target
-                    print(f"someone is trying to send a message to {target}")
-                    to_client(target, message, username)
+                    # user does not exist yet, create new user and log in
+                    create_account(username, c)
+                    to_client(username, f"Welcome to your new account, {username}.\n")
 
-        # LOG OUT
-        elif opcode == '3':
-            to_client(username, "You have logged out. Goodbye!")
-            logout(username)
+            # LOG IN
+            elif opcode == '1': # log in
+                if sessions[username] is not None:
+                    # someone else is logged into the requested account
+                    # with server_lock:
+                    to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
+                    logout(username)
 
-        # DELETE ACCOUNT
-        elif opcode == '4':
-            to_client(username, "Your account has been deleted. Goodbye!")
-            sessions.pop(username)
-            if username in messages:
-                messages.pop(username)
+                # with server_lock:
+                login(username, c)
+                to_client(username, f"Welcome back, {username}")
+                # Send undelivered messages, if any
+                send_pending(messages, username)
 
-        # LIST ALL USERS
-        elif opcode == '5':
-            # List all usernames with connections that are not None (i.e. currently logged in)
-            users_logged_in = []
-            for u, c in sessions.items():
-                if c != None:
-                    users_logged_in.append(u)
-            to_client(username, str(users_logged_in), "ALL ACCOUNTS")
+            # SEND MESSAGE
+            elif opcode == '2':
+                if target not in sessions.keys():
+                    # TODO: raise exception instead?
+                    to_client(username, f"Error: User {target} does not exist. Message could not be sent")
+                else:
+                    if sessions[target] == None:
+                        # target is not logged in, queue message
+                        queue_message(username, target, message)
+                    else:
+                        # send message to target
+                        print(f"someone is trying to send a message to {target}")
+                        to_client(target, message, username)
+
+            # LOG OUT
+            elif opcode == '3':
+                # with server_lock:
+                # to_client(username, "You have logged out. Goodbye!")
+                logout(username)
+
+            # DELETE ACCOUNT
+            elif opcode == '4':
+                to_client(username, "Your account has been deleted. Goodbye!")
+                sessions.pop(username)
+                if username in messages:
+                    messages.pop(username)
+
+            # LIST ALL USERS
+            elif opcode == '5':
+                # to_client(username, str(list(sessions.keys())), "ALL ACCOUNTS")
+                users_logged_in = []
+                for u, c in sessions.items():
+                    if c != None:
+                        users_logged_in.append(u)
+                to_client(username, str(users_logged_in), "ALL ACCOUNTS")
 
     # connection closed
     c.close()

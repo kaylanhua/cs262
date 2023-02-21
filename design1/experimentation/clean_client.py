@@ -3,13 +3,15 @@ import socket
 from _thread import start_new_thread
 import time
 import select
+import os
 
-MESSAGE_MAX_LENGTH_BYTES = 800
+MESSAGE_MAX_LENGTH_BYTES = 800  # TODO: explain
 # local host IP '127.0.0.1'
-host = '172.20.10.3'
+host = 'localhost'
+# host = '10.250.94.109'        # or replace w/ external machine's ip address
 
 # Define the port on which you want to connect
-port = 6023
+port = 6025
 
 # disallowed characters (used in packet encoding)
 disallowed_chars = ['%', '|', ' ']
@@ -52,18 +54,20 @@ def threaded_receive(conn):
             if ready[0]:
                 data = conn.recv(1024)
 
-                # print('Data (raw):', data, ' len:', len(data))
-
-                if not data:
-                    print('Bye')
-                    # lock released on exit
-                    # print_lock.release()
-                    break
+                print('Data (raw):', data, ' len:', len(data))
 
                 data = data.decode('ascii')
                 print('Data (decoded):', data, ' len:', len(data))
-                
-                # Multiple packets may be received at once (separated by '|'), so split them
+
+                if not data:
+                    print('Bye')
+                    break
+                elif "SERVER%Someone else" in data:
+                    print('youre being locked out')
+                    conn.shutdown(socket.SHUT_RDWR)
+                    conn.close()
+                    os._exit(1)
+
                 packets = data.split('|')
                 for packet in packets:
                     if packet == '':
@@ -74,11 +78,6 @@ def threaded_receive(conn):
             # Error occurs when parent thread closes connection:
             #   not a problem as we are logging out anyway, so ignore
             break
-
-        data = data.decode('ascii')
-        print('Data (decoded):', data, ' len:', len(data))
-        sender, message = data.split('%')
-        print(f"[{sender}] {message}")
 
 
 def welcome_menu(client):
@@ -138,7 +137,7 @@ class Client:
     def logout(self):
         self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
-        print('You have been logged out. Exiting...')
+        print('You are logged out. Exiting ...')
 
     def list_all_users(self):
         self.send_message('5', self.username)

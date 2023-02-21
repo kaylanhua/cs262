@@ -7,14 +7,13 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 
-
-host = 'localhost'
+host = 'localhost'  # replace with 0.0.0.0 to open up to other machines
 port = '50051'
 sessions = dict()   # manages which users are currently logged in, as in the socket server
 messages = dict()   # manages which users have outstanding messages which are yet to be delivered
 
 
-# functions taken from clean_server.py
+# following four functions taken from clean_server.py
 def create_account(username, connection):
     sessions[username] = connection
     print(f"{username} has created an account")
@@ -67,18 +66,19 @@ class Server(messages_pb2_grpc.ServerServicer):
         # CREATE ACCOUNT
         if opcode == '0':
             if username in sessions:
-                # user alr exists, log in
+                # user already exists, log in
                 login(username, True)
+                toClient = f"User already exists. Welcome back, {username}.\n"
                 # TODO: raise exception, user already exists
             else:
                 # user does not exist yet, create new user and log in
                 create_account(username, True)
-                toClient = f"Welcome to your new account, {username}"
+                toClient = f"Welcome to your new account, {username}."
         
         # LOG IN
         elif opcode == '1': # log in
             login(username, True)
-            toClient = f"Welcome back, {username}\n"
+            toClient = f"Welcome back, {username}.\n"
             # Send undelivered messages, if any
             pending = self.send_pending(messages, username, True)
             if pending:

@@ -11,7 +11,7 @@ from _thread import start_new_thread
 
 from clean_client import get_username, get_message
 
-host = '10.250.94.109'  # put in ip address of external server
+host = 'localhost'  # put in ip address of external server
 port = '50051'
 
 class Client:
@@ -64,7 +64,6 @@ class Client:
         self.send_message('2', target, message)
         
     def logout(self):
-        print('You have been logged out. Exiting...')
         exit()
 
 
