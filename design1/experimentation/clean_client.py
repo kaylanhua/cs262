@@ -25,10 +25,12 @@ host = 'localhost'
 # host = '10.250.94.109'        # or replace w/ external machine's ip address
 
 # Define the port on which you want to connect
-port = 6025
+port = 6027
 
 # disallowed characters (used in packet encoding)
 disallowed_chars = ['%', '|', ' ']
+
+logged_in = False
 
 def get_username():
     '''Get username from user, ensuring it is valid.'''
@@ -86,9 +88,11 @@ def threaded_receive(conn):
                     os._exit(1)
                 elif "SERVER%Account does not exist" in data:
                     print('Account does not exist. Please try again.')
+                    print('____')
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
                     os._exit(1)
+                    # TODO: thread doesn't actually exit (same above)
 
                 # split incoming message into distict packets (delimited by '|')
                 packets = data.split('|')

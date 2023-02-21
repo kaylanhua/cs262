@@ -72,17 +72,29 @@ class Server(messages_pb2_grpc.ServerServicer):
                     # user already exists, log in
                     login(username, True)
                     toClient = f"User already exists. Welcome back, {username}.\n"
+                    if sessions[username] is not None:
+                        # someone else is logged into the requested account
+                        toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
+                        logout(username)
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, True)
                     toClient = f"Welcome to your new account, {username}."
-            
+
             # LOG IN
             elif opcode == '1': # log in
+                if username not in sessions:
+                    # user does not exist, give error
+                    toClient = "Account does not exist. Please create an account first."
+                    logout(username)
+                    return messages_pb2.ServerLog(message=toClient)
+
                 if sessions[username] is not None:
                     # someone else is logged into the requested account
                     toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
                     logout(username)
+                    return messages_pb2.ServerLog(message=toClient)
+                
                 login(username, True)
                 toClient = f"Welcome back, {username}.\n"
                 # Send undelivered messages, if any

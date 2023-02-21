@@ -8,7 +8,7 @@ import threading
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()  # stores who has outstanding messages
 HOST = "localhost"   # open to broader network to connect across machines
-PORT = 6025
+PORT = 6027
 
 server_lock = threading.Lock()
 
@@ -78,8 +78,12 @@ def threaded(c):
             if opcode == '0':
                 if username in sessions:
                     # if user already exists, log in
-                    to_client(username, f"User already exists. Welcome back, {username}.\n")
                     login(username, c)
+                    to_client(username, f"User already exists. Welcome back, {username}.\n")
+                    if sessions[username] is not None:
+                        # someone else is logged into the requested account
+                        toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
+                        logout(username)
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, c)
