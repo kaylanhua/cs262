@@ -46,11 +46,14 @@ def send_pending(messages, username):
             to_client(username, message, sender)
         messages.pop(username)
 
-def to_client(recipient, message, sender="SERVER"):
+def to_client(recipient, message, sender="SERVER", conn=None):
     data = f"{sender}%{message}|"
     print('sending to', recipient, ':', data)
 
-    sessions[recipient].sendall(data.encode('ascii'))
+    if conn is not None:
+        conn.sendall(data.encode('ascii'))
+    else:
+        sessions[recipient].sendall(data.encode('ascii'))
 
 # thread function
 def threaded(c):
@@ -86,8 +89,8 @@ def threaded(c):
             elif opcode == '1': # log in
                 if username not in sessions:
                     # user does not exist, give error
-                    to_client(username, f"Welcome to your new account, {username}.\n")
-                    # TODO
+                    to_client(username, "Account does not exist. Please create an account first.", conn=c)
+                    break
 
                 if sessions[username] is not None:
                     # someone else is logged into the requested account

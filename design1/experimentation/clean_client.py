@@ -80,7 +80,12 @@ def threaded_receive(conn):
                     print('Bye')
                     break
                 elif "SERVER%Someone else" in data:
-                    print('youre being locked out')
+                    print('Someone else is logged in with that username. Please try again.')
+                    conn.shutdown(socket.SHUT_RDWR)
+                    conn.close()
+                    os._exit(1)
+                elif "SERVER%Account does not exist" in data:
+                    print('Account does not exist. Please try again.')
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
                     os._exit(1)
@@ -100,14 +105,14 @@ def threaded_receive(conn):
 
 def welcome_menu(client):
     '''Welcome menu for new users.'''
-    print({bcolors.OKBLUE} + '''
+    print(bcolors.OKBLUE + '''
  __     __     ______     __         ______     ______     __    __     ______    
 /\ \  _ \ \   /\  ___\   /\ \       /\  ___\   /\  __ \   /\ "-./  \   /\  ___\   
 \ \ \/ ".\ \  \ \  __\   \ \ \____  \ \ \____  \ \ \/\ \  \ \ \-./\ \  \ \  __\   
  \ \__/".~\_\  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_____\ 
   \/_/   \/_/   \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_____/ 
                                                                                   
-''' + {bcolors.ENDC} )
+''' + bcolors.ENDC )
     print('Welcome! Type 0 to create an account, type 1 to log in.')
 
     valid = False
