@@ -77,13 +77,13 @@ def threaded(c):
             # CREATE ACCOUNT
             if opcode == '0':
                 if username in sessions:
-                    # if user already exists, log in
+                    if sessions[username] is not None:
+                        # someone else is logged into the requested account, log existing user out
+                        to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
+                        logout(username)
                     login(username, c)
                     to_client(username, f"User already exists. Welcome back, {username}.\n")
-                    if sessions[username] is not None:
-                        # someone else is logged into the requested account
-                        toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
-                        logout(username)
+                    
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, c)

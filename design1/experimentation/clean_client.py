@@ -150,7 +150,6 @@ class Client:
     def create_account(self, username):
         '''Create new account.'''
         self.username = username
-        # TODO: handle failure
         self.send_message('0', username)
 
     def login(self, username):
