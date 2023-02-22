@@ -3,6 +3,7 @@ import socket
 from _thread import start_new_thread
 import time
 import select
+import sys
 import os
 
 # GLOBALS --------------------------------
@@ -156,11 +157,16 @@ class Client:
         # TODO: handle failure
         self.send_message('1', username)
 
-    def send_message(self, opcode, username, message=None, target=None):
+    def send_message(self, opcode, username, message=None, target=None, doTime=False):
         '''Send message to server with opcode, username, message, and target.'''
+        start = time.time()
         msg = f'{opcode}%{username}%{target}%{message}'
         bmsg = msg.encode('ascii')
         self.conn.sendall(bmsg)
+        end = time.time()
+        if doTime:
+            print("timing: ", end - start)
+            print("size of: ", sys.getsizeof(bmsg))
         # printb(f'Message sent.')
 
     def query_message(self):

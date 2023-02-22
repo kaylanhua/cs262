@@ -1,4 +1,5 @@
 # Engineering Notebook
+kayla lanting huang and tom mitchell cobley
 
 **Instructions:** Keep a notebook for what decisions you made, and why you made them the way you did, and any interesting observations that come up along the way.
 
@@ -21,6 +22,7 @@ A few key decisions
 - If the user already exists when someone tries to create an account, we just automatically log that person into the account. We thought this would provide a better user experience, though it would not work great at scale (i.e. many people have the same name and might try to claim the same username).
 - When someone queries for all users who are logged in, we list all the users who are logged in, not just some sample of them. We thought this to be more constructive, since the idea of listing the accounts which are active is to figure out who you can possibly talk to at a given moment. 
 - We made sure to lock all threads inside of the server so that no thread could alter the shared data structures when others were trying to access it. 
+- Messsages are at most 800 characters. If a user attempts to submit any more than that, they are asked to cut their message down. This is because we want to have enough space in the max 1024 char message to put in the sender and receiver's usernames, as well as any other op codes or separators we might have. We could have done more than 800 chars (op codes and usernames wouldn't take up more than 100 chars), but 800 is playing it safe. 
 
 ## GRPC Engineering Decisions
 More key decisions
@@ -49,6 +51,6 @@ More key decisions
 
 
 ## Comparing gRPC
-Add to your notebook comparisons over the complexity of the code, any performance differences, and the size of the buffers being sent back and forth between the client and the server.
+In terms of code complexity, the gRPC implementation required less design specifications (i.e. how what information is transmitted and parsed) and fewer lines of code in general. We were also able to reuse a few functions from the socket implementation and transfer knowledge, so the coding process was smoother and more concise. In terms of performance, the gRPC implementation is a bit slower in terms of communication between client and server. Any call and response (i.e. message sending) in the gRPC implementation takes anywhere from around 0.002-0.006 seconds. However, messages take only about 6e-05 seconds to complete when using the socket implementation. This is a significant difference in time (around 100x faster to use the socket method), but is imperceptible to the human user. Not to mention, the user gets the messages instantly in the socket implementation, but might have to wait up to 0.5 seconds to receive live messages in the polling gRPC implementation. 
 
-- [ ] explain max packet size of 800
+In terms of size, the size of the buffer being sent back and forth for the socket implementation is at most 1024 bytes, but it depends on the messages size. However, for gRPC, the buffer size is always 96 bytes because we are always sending a server log object back and forth. This means that, technically, the gRPC buffer is smaller because the message object is being pointed to as opposed to being passed back and forth between the client and server. 

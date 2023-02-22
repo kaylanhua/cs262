@@ -7,6 +7,7 @@ import grpc
 import messages_pb2
 import messages_pb2_grpc
 import time
+import sys
 from _thread import start_new_thread
 
 from socket_client import get_username, get_message, printb, bcolors
@@ -50,7 +51,8 @@ class Client:
         '''Get a list of all users currently logged in.'''
         return self.send_message('5')
 
-    def send_message(self, opcode, target=None, message=None):
+    def send_message(self, opcode, target=None, message=None, doTime=False):
+        start = time.time()
         '''Send message to server with opcode, username, message, and target.'''
         with grpc.insecure_channel(str(self.host) + ':' + str(self.port)) as channel:
             stub = messages_pb2_grpc.ServerStub(channel)
@@ -67,7 +69,12 @@ class Client:
             log_out = True
             exit()
         elif data:
+            # print("size of response: ", sys.getsizeof(response))
             print(f"{data}")
+        
+        end = time.time()
+        if doTime:
+            print("request + response time: ", end - start)
         return response
 
     def welcome_menu(self):
