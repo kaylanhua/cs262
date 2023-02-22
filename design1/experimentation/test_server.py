@@ -47,37 +47,6 @@ class Test(unittest.TestCase):
     def assert_response_not_contains(self, data, string):
         self.assertNotIn(string, data.decode('ascii'))
 
-    # def test_server_accepts_one_client(self):
-    #     with test_lock:
-    #         print('Acquired lock')
-
-    #         server_thread, server, port = self.spawn_server()
-    #         client = self.add_client(TEST_USERNAME_1, port)
-
-    #         data = client.conn.recv(DATA_SIZE)
-
-    #         self.assert_response_contains(data, "Welcome")
-
-    #         self.cleanup([client], server, server_thread)
-
-    #         print('_______ CLEANUP ______________')
-
-    #     with test_lock:
-    #         print('Acquired lock')
-
-    #         server_thread, server, port = self.spawn_server()
-    #         client1 = self.add_client(TEST_USERNAME_1, port)
-
-    #         data1 = client1.conn.recv(DATA_SIZE)
-    #         self.assert_response_contains(data1, "Welcome")
-    #         print('>>> 1')
-
-    #         # client2 = self.add_client(TEST_USERNAME_2, port)
-
-    #         # data2 = client2.conn.recv(DATA_SIZE)
-    #         # self.assert_response_contains(data2, "Welcome")
-    #         # print('>>> 1')
-
     #         # self.cleanup([client1, client2], server, server_thread)
     #         print('_______ CLEANUP ______________')
 
