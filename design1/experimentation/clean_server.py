@@ -8,7 +8,7 @@ import threading
 sessions = dict()  # who is logged in (usernames: connection | None)
 messages = dict()  # stores who has outstanding messages
 HOST = "localhost"   # open to broader network to connect across machines
-PORT = 6027
+PORT = 6028
 
 server_lock = threading.Lock()
 
@@ -77,13 +77,13 @@ def threaded(c):
             # CREATE ACCOUNT
             if opcode == '0':
                 if username in sessions:
+                    # if user already exists, log in
                     if sessions[username] is not None:
-                        # someone else is logged into the requested account, log existing user out
-                        to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
+                        # someone else is logged into the requested account
+                        toClient = "KillSomeone else has logged into this account so you're being logged out. Goodbye!"
                         logout(username)
                     login(username, c)
                     to_client(username, f"User already exists. Welcome back, {username}.\n")
-                    
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, c)
@@ -93,12 +93,12 @@ def threaded(c):
             elif opcode == '1': # log in
                 if username not in sessions:
                     # user does not exist, give error
-                    to_client(username, "Account does not exist. Please create an account first.", conn=c)
+                    to_client(username, "KillAccount does not exist. Please create an account first.", conn=c)
                     break
 
                 if sessions[username] is not None:
                     # someone else is logged into the requested account
-                    to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
+                    to_client(username, "KillSomeone else has logged into this account so you're being logged out. Goodbye!")
                     logout(username)
 
                 login(username, c)
@@ -122,8 +122,6 @@ def threaded(c):
 
             # LOG OUT
             elif opcode == '3':
-                # with server_lock:
-                # to_client(username, "You have logged out. Goodbye!")
                 logout(username)
 
             # DELETE ACCOUNT
@@ -135,7 +133,7 @@ def threaded(c):
 
             # LIST ALL USERS
             elif opcode == '5':
-                # Return a list of all users who are currently logged in 
+                # Return a list of all users who are currently logged in
                 to_client(username, str([key for key in sessions.keys() if sessions[key] is not None and sessions[key].fileno() != -1]), "ALL ACCOUNTS")
 
 

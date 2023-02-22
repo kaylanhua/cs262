@@ -5,6 +5,14 @@ import time
 import select
 import os
 
+# GLOBALS --------------------------------
+
+host = 'localhost'                   # local host IP '127.0.0.1' or replace w/ external machine's ip address
+port = 6028                          # Define the port on which you want to connect
+MESSAGE_MAX_LENGTH_BYTES = 800       # max length of message body in bytes
+disallowed_chars = ['%', '|', ' ']   # disallowed characters (used in packet encoding)
+log_out = False                      # instigates an automatic log out when the user attempts to access the wrong account 
+
 # colors for terminal output
 class bcolors:
     HEADER = '\033[95m'
@@ -16,21 +24,12 @@ class bcolors:
     ENDC = '\033[0m'
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
+    
+# FUNCTIONS --------------------------------
 
-# max length of message body in bytes
-MESSAGE_MAX_LENGTH_BYTES = 800
-
-# local host IP '127.0.0.1'
-host = 'localhost'
-# host = '10.250.94.109'        # or replace w/ external machine's ip address
-
-# Define the port on which you want to connect
-port = 6027
-
-# disallowed characters (used in packet encoding)
-disallowed_chars = ['%', '|', ' ']
-
-logged_in = False
+def printb(msg):
+    '''prints menu messages for the client in blue '''
+    print(bcolors.OKBLUE + msg + bcolors.ENDC)
 
 def get_username():
     '''Get username from user, ensuring it is valid.'''
@@ -65,6 +64,7 @@ def get_message():
 
 # thread function
 def threaded_receive(conn):
+    global log_out
     '''Thread function for receiving messages from server.'''
     while True:
         # data received from client
@@ -72,27 +72,22 @@ def threaded_receive(conn):
             ready = select.select([conn], [], [], 1)
             if ready[0]:
                 data = conn.recv(1024)
-
-                print('Data (raw):', data, ' len:', len(data))
+                # print('Data (raw):', data, ' len:', len(data))
 
                 data = data.decode('ascii')
-                print('Data (decoded):', data, ' len:', len(data))
+                # print('Data (decoded):', data, ' len:', len(data))
 
                 if not data:
-                    print('Bye')
+                    printb('Uh oh, the server has died. Goodbye!')
                     break
-                elif "SERVER%Someone else" in data:
-                    print('Someone else is logged in with that username. Please try again.')
+                elif "SERVER%Kill" in data: 
+                    # Server has sent a signal to kill the client because of an invalid request 
+                    # (i.e. logging into an account which doesnt exist)
+                    print(data.replace("SERVER%Kill", "").replace("|", ""))
+                    log_out = True
                     conn.shutdown(socket.SHUT_RDWR)
                     conn.close()
                     os._exit(1)
-                elif "SERVER%Account does not exist" in data:
-                    print('Account does not exist. Please try again.')
-                    print('____')
-                    conn.shutdown(socket.SHUT_RDWR)
-                    conn.close()
-                    os._exit(1)
-                    # TODO: thread doesn't actually exit (same above)
 
                 # split incoming message into distict packets (delimited by '|')
                 packets = data.split('|')
@@ -100,7 +95,7 @@ def threaded_receive(conn):
                     if packet == '':
                         continue
                     sender, message = packet.split('%')
-                    print(f"{bcolors.OKBLUE}[{sender}] {message}{bcolors.ENDC}")
+                    print(f"[{sender}] {message}")
         except Exception as e:
             # Error occurs when parent thread closes connection:
             #   not a problem as we are logging out anyway, so ignore
@@ -116,20 +111,20 @@ def welcome_menu(client):
  \ \__/".~\_\  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_____\ 
   \/_/   \/_/   \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_____/ 
                                                                                   
-''' + bcolors.ENDC )
-    print('Welcome! Type 0 to create an account, type 1 to log in.')
+''' + bcolors.ENDC)
+    printb('Hello! Type 0 to create an account, type 1 to log in.')
 
     valid = False
     while valid is False:
         response = input().replace(" ", "")
         if response == '0' :
             # create account or login (same effect)
-            print('Please enter your username.')
+            printb('Please enter your username.')
             client.create_account(get_username())
             valid = True
 
         elif response == '1':
-            print('Please enter your username.')
+            printb('Please enter your username.')
             client.login(get_username())
             valid = True
 
@@ -163,13 +158,13 @@ class Client:
         msg = f'{opcode}%{username}%{target}%{message}'
         bmsg = msg.encode('ascii')
         self.conn.sendall(bmsg)
-        print(f'Message sent, {len(msg)} bytes transmitted')
+        # printb(f'Message sent.')
 
     def query_message(self):
         '''Obtain message details from user and send to server.'''
-        print('Please enter username of recipient.')
+        printb('Please enter username of recipient.')
         target = get_username()
-        print('Please enter your message.')
+        printb('Please enter your message.')
         message = get_message()
         self.send_message(2, self.username, message, target)
 
@@ -177,7 +172,7 @@ class Client:
         '''Log out of account by closing connection to server.'''
         self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
-        print('You are logged out. Exiting ...')
+        printb('You are logged out. Exiting ...')
 
     def list_all_users(self):
         '''
@@ -188,7 +183,7 @@ class Client:
 
 def Main():
     '''Main messaging loop.'''
-
+    global log_out
     # create new client instance
     client = Client(host, port)
 
@@ -197,13 +192,15 @@ def Main():
 
     # log in / create account
     welcome_menu(client)
-
     while True:
         # sleep for a moment to improve user experience
         time.sleep(0.5)
+        
+        if log_out:
+            exit()
 
         # show menu to user
-        print('Select an option: 2 for send message, 3 for log out, 4 for delete account, 5 for list all users.')
+        printb('Select an option: \n2 to send message, 3 to log out, 4 to delete account, 5 to list all online users.')
 
         # strip whitespace from input
         op = input().replace(" ", "")
@@ -230,5 +227,4 @@ def Main():
 
 
 if __name__ == '__main__':
-    print("Client Started")
     Main()
