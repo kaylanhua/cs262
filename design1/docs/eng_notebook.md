@@ -46,3 +46,7 @@ More key decisions
 - When someone logs into the same account that someone else is already logged into, the first person who logged into the account gets automatically logged out. 
 - When someone deletes an account that still has outstanding messages, the messages are deleted with the account, without the user ever having been aware that there are still outstanding messages. This really only applies in the gRPC case in which the message is deleted in the 0.5 seconds before the outstanding message is sent to the client, which is a very rare case. In all other cases, there will be no outstanding messages, because a user has to be logged in to try to delete their account (and, thus, will immediately receive messages that are sent to them).
 - We manually tested what happens what someone sends a string of messages to someone who is logged out and the user logs in. Upon log in, while the messages are being printed in the new terminal, and another user starts to try to send the user new messages, we made sure that the new messages arrive after the queued messages finish printing. This is accomplished with locking. 
+
+
+## Comparing gRPC
+Add to your notebook comparisons over the complexity of the code, any performance differences, and the size of the buffers being sent back and forth between the client and the server.
