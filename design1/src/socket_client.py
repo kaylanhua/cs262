@@ -224,7 +224,6 @@ def Main():
                 client.query_message()
             elif op == "3":
                 # logout
-                client.send_message('3', client.username)
                 client.logout()
                 exit()
             elif op == "4":
