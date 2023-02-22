@@ -23,8 +23,8 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-host = 'localhost'  # put in ip address of external server
-port = '50051'
+HOST = 'localhost'  # put in ip address of external server
+PORT = '50051'
 
 class Client:
     def __init__(self, host, port):
@@ -35,16 +35,20 @@ class Client:
     def create_account(self, username):
         '''Create new account.'''
         self.username = username
-        self.send_message('0', username)
+        return self.send_message('0', username)
 
     def login(self, username):
         '''Log in to existing account.'''
         self.username = username
         self.send_message('1', username)
 
+    def list_all_users(self):
+        '''Get a list of all users currently logged in.'''
+        return self.send_message('5')
+
     def send_message(self, opcode, target=None, message=None):
         '''Send message to server with opcode, username, message, and target.'''
-        with grpc.insecure_channel(host + ':' + port) as channel:
+        with grpc.insecure_channel(str(self.host) + ':' + str(self.port)) as channel:
             stub = messages_pb2_grpc.ServerStub(channel)
             request = messages_pb2.MessageToServer(
                 opcode=opcode, username=self.username, target=target, message=message
@@ -109,7 +113,7 @@ def Main():
     '''Main messaging loop.'''
     
     # create new client instance
-    client = Client(host, port)
+    client = Client(HOST, PORT)
    
     # start thread for receiving messages in background
     start_new_thread(threaded_receive, (client,))
@@ -141,7 +145,7 @@ def Main():
             client.logout()
         elif op == "5":
             # list all users
-            client.send_message('5')
+            client.list_all_users()
         else: 
             print('Invalid input. Please try again.')
         
