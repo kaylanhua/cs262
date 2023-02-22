@@ -135,12 +135,9 @@ def threaded(c):
 
             # LIST ALL USERS
             elif opcode == '5':
-                to_client(username, str(list(sessions.keys())), "ALL ACCOUNTS")
-                # users_logged_in = []
-                # for u, c in sessions.items():
-                #     if c != None:
-                #         users_logged_in.append(u)
-                # to_client(username, str(users_logged_in), "ALL ACCOUNTS")
+                # Return a list of all users who are currently logged in 
+                to_client(username, str([key for key in sessions.keys() if sessions[key] is not None and sessions[key].fileno() != -1]), "ALL ACCOUNTS")
+
 
     # connection closed
     c.close()
