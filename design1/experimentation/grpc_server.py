@@ -1,5 +1,3 @@
-"""The Python implementation of the GRPC messages.Server server."""
-
 from concurrent import futures
 import logging
 
@@ -8,11 +6,17 @@ import messages_pb2
 import messages_pb2_grpc
 
 from threading import Lock
+from clean_client import bcolors
+from clean_server import printg
+
+# GLOBALS --------------------------------
 
 HOST = 'localhost'  # replace with 0.0.0.0 to open up to other machines
 PORT = '50051'
 
-server_lock = Lock()    # lock for server mutx
+server_lock = Lock()    # lock for server mutex
+
+# FUNCTIONS --------------------------------
 
 class Server(messages_pb2_grpc.ServerServicer):
 
@@ -24,15 +28,15 @@ class Server(messages_pb2_grpc.ServerServicer):
     # following four functions taken from clean_server.py
     def create_account(self, username, connection):
         self.sessions[username] = connection
-        print(f"{username} has created an account")
+        printg(f"> {username} has created an account.")
 
     def login(self, username, connection):
         self.sessions[username] = connection
-        print(f"{username} has logged in")
+        printg(f"> {username} has logged in.")
 
     def logout(self, username):
         self.sessions[username] = None
-        print(f"{username} has logged out")
+        printg(f"> {username} has logged out.")
 
     def queue_message(self, sender, recipient, message):
         if recipient not in self.messages:
@@ -59,7 +63,7 @@ class Server(messages_pb2_grpc.ServerServicer):
             if justLoggedIn:
                 info_msg = f"You have {len(messages[username])} new messages since you last logged in:\n"
             else:
-                info_msg = f"\nNew message!\n"
+                info_msg = ""
             toClient = info_msg
 
             # combine all backlogged messages into one larger message to send to client
@@ -85,10 +89,10 @@ class Server(messages_pb2_grpc.ServerServicer):
                     # user already exists, log in
                     if self.sessions[username] is not None:
                         # someone else is logged into the requested account
-                        toClient = "SERVER%KillSomeone else has logged into this account so you're being logged out. Goodbye!"
-                        self.logout(username)
-                    self.login(username, True)
-                    toClient = f"User already exists. Welcome back, {username}.\n"
+                        toClient = "SERVER%KillSomeone else is already logged into this account. Goodbye!"
+                        # self.logout(username)
+                    # self.login(username, True)
+                    # toClient = f"User already exists. Welcome back, {username}.\n"
                 else:
                     # user does not exist yet, create new user and log in
                     self.create_account(username, True)
@@ -104,8 +108,8 @@ class Server(messages_pb2_grpc.ServerServicer):
 
                 if self.sessions[username] is not None:
                     # someone else is logged into the requested account
-                    toClient = "SERVER%KillSomeone else has logged into this account so you're being logged out. Goodbye!"
-                    self.logout(username)
+                    toClient = "SERVER%KillSomeone else is already logged into this account. Goodbye!"
+                    # self.logout(username)
                     return messages_pb2.ServerLog(message=toClient)
 
                 self.login(username, True)
@@ -126,7 +130,7 @@ class Server(messages_pb2_grpc.ServerServicer):
                         self.queue_message(username, target, message)
                     else:
                         # send message to target
-                        print(f"someone is trying to send a message to {target}")
+                        printg(f"> {username} is trying to send a message to {target}.")
                         self.queue_message(username, target, message)
 
             # LOG OUT

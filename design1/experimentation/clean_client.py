@@ -8,7 +8,7 @@ import os
 # GLOBALS --------------------------------
 
 host = 'localhost'                   # local host IP '127.0.0.1' or replace w/ external machine's ip address
-port = 6028                          # Define the port on which you want to connect
+port = 6030                          # Define the port on which you want to connect
 MESSAGE_MAX_LENGTH_BYTES = 800       # max length of message body in bytes
 disallowed_chars = ['%', '|', ' ']   # disallowed characters (used in packet encoding)
 log_out = False                      # instigates an automatic log out when the user attempts to access the wrong account 
@@ -35,15 +35,18 @@ def get_username():
     '''Get username from user, ensuring it is valid.'''
     valid = False
     while valid is False:
+        valid = True
         username = input()
         for char in disallowed_chars:
             if char in username:
-                print(f'Username "{username}" is invalid (must not contain "{char}"), please try again.')
+                printb(f'Username "{username}" is invalid (must not contain "{char}"), please try again.')
+                valid = False
                 break
+        
         if (len(username) > 20):
-            print(f'Username must not be longer than 20 characters, please try again.')
-        else:
-            valid = True
+            printb(f'Username must not be longer than 20 characters, please try again.')
+            valid = False
+
     return username
 
 def get_message():
@@ -129,7 +132,7 @@ def welcome_menu(client):
             valid = True
 
         else:
-            print('Invalid input. Please try again.')
+            printb('Invalid input. Please try again.')
 
 
 class Client:

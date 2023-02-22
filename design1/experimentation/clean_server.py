@@ -1,31 +1,37 @@
-# import socket programming library
 import socket
-
-# import thread module
 from _thread import start_new_thread
 import threading
+from clean_client import bcolors
 
-sessions = dict()  # who is logged in (usernames: connection | None)
-messages = dict()  # stores who has outstanding messages
-HOST = "localhost"   # open to broader network to connect across machines
-PORT = 6028
+# GLOBALS --------------------------------
+
+sessions = dict()       # who is logged in (usernames: connection | None)
+messages = dict()       # stores who has outstanding messages
+HOST = "localhost"      # open to broader network to connect across machines
+PORT = 6030
 
 server_lock = threading.Lock()
+
+# FUNCTIONS --------------------------------
+
+def printg(msg):
+    '''prints menu messages for the client in blue '''
+    print(bcolors.OKGREEN + msg + bcolors.ENDC)
 
 def create_account(username, connection):
     # connection of all logged in users stored in sessions upon log in or, equivalently, account creation
     sessions[username] = connection
-    print(f"{username} has created an account")
+    printg(f"> {username} has created an account.")
 
 def login(username, connection):
     # user added to the active list (sessions)
     sessions[username] = connection
-    print(f"{username} has logged in")
+    printg(f"> {username} has logged in.")
 
 def logout(username):
     # connection information removed upon log out
     sessions[username] = None
-    print(f"{username} has logged out")
+    printg(f"> {username} has logged out.")
 
 def queue_message(sender, recipient, message):
     # messages queued if the intended recipient is not currently logged in
@@ -48,7 +54,7 @@ def send_pending(messages, username):
 
 def to_client(recipient, message, sender="SERVER", conn=None):
     data = f"{sender}%{message}|"
-    print('sending to', recipient, ':', data)
+    print('Sending to', recipient, ':', data)
 
     if conn is not None:
         conn.sendall(data.encode('ascii'))
@@ -61,18 +67,17 @@ def threaded(c):
         # data received from client
         data = c.recv(1024)
         with server_lock:
-            print('Data (raw):', data, ' len:', len(data))
 
             # a thread has dropped, likely indicating that a user has logged out or deleted their account
             if not data:
-                print('HOMIE DEPARTURE ALERT')
+                printg('> HOMIE DEPARTURE ALERT')
                 break
 
             data = data.decode('ascii')
             print(f"The data is: {data}")
 
             opcode, username, target, message = data.split('%')
-            print(opcode, username, target, message)
+            # print(opcode, username, target, message)
 
             # CREATE ACCOUNT
             if opcode == '0':
@@ -117,7 +122,7 @@ def threaded(c):
                         queue_message(username, target, message)
                     else:
                         # send message to target
-                        print(f"someone is trying to send a message to {target}")
+                        printg(f"> {username} is trying to send a message to {target}.")
                         to_client(target, message, username)
 
             # LOG OUT
@@ -150,11 +155,11 @@ class Server:
 
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.bind((host, port))
-        print("socket binded to port", port)
+        print("Socket binded to port", port)
 
         # put the socket into listening mode
         self.socket.listen(5)
-        print("socket is listening")
+        print("Socket is listening!")
 
         # a forever loop until client wants to exit
         while True:
@@ -171,9 +176,9 @@ class Server:
 
             # lock acquired by client
             # print_lock.acquire()
-            print("-------------------")
-            print("NEW HOMIE ALERT")
-            print('Connected to :', addr[0], ':', addr[1])
+            printg("-------------------")
+            printg("> NEW HOMIE ALERT")
+            printg('> Connected to :' + str(addr[0]) + ':' + str(addr[1]))
 
             # Start a new thread and return its identifier
             start_new_thread(threaded, (c,))

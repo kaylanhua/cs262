@@ -9,12 +9,12 @@ import messages_pb2_grpc
 import time
 from _thread import start_new_thread
 
-from clean_client import get_username, get_message
+from clean_client import get_username, get_message, printb, bcolors
 
 # GLOBALS --------------------------------
 
-host = 'localhost'  # alternatively, use ip address of external server
-port = '50051'
+HOST = 'localhost'  # alternatively, use ip address of external server
+PORT = '50051'
 
 # colors for terminal output
 class bcolors:
@@ -28,13 +28,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-HOST = 'localhost'  # put in ip address of external server
-PORT = '50051'
 # FUNCTIONS --------------------------------
-
-def printb(msg):
-    '''prints menu messages for the client in blue '''
-    print(bcolors.OKBLUE + msg + bcolors.ENDC)
 
 class Client:
     def __init__(self, host, port):
@@ -163,7 +157,7 @@ def Main():
             # list all users
             client.list_all_users()
         else:
-            print('Invalid input. Please try again.')
+            printb('Invalid input. Please try again.')
 
 
 if __name__ == '__main__':
