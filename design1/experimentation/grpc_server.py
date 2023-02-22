@@ -81,9 +81,9 @@ class Server(messages_pb2_grpc.ServerServicer):
 
             # CREATE ACCOUNT
             if opcode == '0':
-                if username in sessions:
+                if username in self.sessions:
                     # user already exists, log in
-                    if sessions[username] is not None:
+                    if self.sessions[username] is not None:
                         # someone else is logged into the requested account
                         toClient = "SERVER%KillSomeone else has logged into this account so you're being logged out. Goodbye!"
                         self.logout(username)
