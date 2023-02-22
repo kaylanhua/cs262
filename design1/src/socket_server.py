@@ -1,7 +1,7 @@
 import socket
 from _thread import start_new_thread
 import threading
-from clean_client import bcolors
+from socket_client import bcolors
 
 # GLOBALS --------------------------------
 

@@ -9,7 +9,7 @@ import messages_pb2_grpc
 import time
 from _thread import start_new_thread
 
-from clean_client import get_username, get_message, printb, bcolors
+from socket_client import get_username, get_message, printb, bcolors
 
 # GLOBALS --------------------------------
 

@@ -6,23 +6,20 @@ The relevant file structure for this project looks like the following:
 
 ```
 design1
-├── socket                  # Non gRPC chat server code 
-│   ├── server.py          
-│   └── client.py        
-├── grpc                    # gRPC chat server code 
-│   ├── grpc_server.py          
-│   ├── grpc_client.py
-│   └── messages.proto      # Proto file for auto generation
-├── test                    # Test files 
-│   ├── benchmarks          # Load and stress tests
-│   ├── integration         # End-to-end, integration tests 
-│   └── unit                # Unit tests
-├── docs                    # Documentation files 
-│   ├── engineering.md      # Engineering ledger
-│   ├── documentation.md    # Explanations of eng decisions
-│   ├── project_specs.md    # Specs for future reference (from Canvas)
-│   └── README.md           # instructions for set up
-└── environment.yml         # dependencies
+├── docs                      # Documentation files 
+│   ├── eng_ledger.md         # Engineering ledger
+│   ├── eng_notebook.md       # Explanations of eng decisions
+│   ├── project_specs.md      # Specs for future reference (from Canvas)
+│   └── README.md             # Instructions for set up
+├── src                      
+│   ├── grpc_server.py        # gRPC chat server code 
+│   ├── grpc_client.py        # gRPC chat client code
+│   ├── messages.proto        # Proto file for auto generation
+│   ├── socket_server.py      # Non gRPC chat server code 
+│   ├── socket_client.py      # Non gRPC chat client code 
+│   ├── test_socket_chat.py   # Tests for socket based chat     
+│   └── test_grpc_chat.py     # Tests for grpc based chat
+└── environment.yml           # dependencies
 ```
 
 ## Running non-gRPC code

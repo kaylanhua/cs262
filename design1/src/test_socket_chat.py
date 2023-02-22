@@ -1,7 +1,7 @@
 import unittest
 
-from clean_server import Server, logout
-from clean_client import Client
+from socket_server import Server, logout
+from socket_client import Client
 import threading
 import time
 

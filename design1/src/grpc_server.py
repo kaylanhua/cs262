@@ -6,8 +6,8 @@ import messages_pb2
 import messages_pb2_grpc
 
 from threading import Lock
-from clean_client import bcolors
-from clean_server import printg
+from socket_client import bcolors
+from socket_server import printg
 
 # GLOBALS --------------------------------
 
