@@ -1,6 +1,6 @@
 import unittest
 
-from clean_server import Server
+from clean_server import Server, logout
 from clean_client import Client
 import threading
 import time
@@ -30,9 +30,12 @@ class Test(unittest.TestCase):
         server_thread.start()
         return server_thread, server, port
     
-    def add_client(self, username, port):
+    def add_client(self, username, port, login=False):
         client = Client(CLIENT_ADDR, port)
-        client.create_account(username)
+        if login:
+            client.login(username)
+        else:
+            client.create_account(username)
         return client
     
     def cleanup(self, clients, server, server_thread):
@@ -80,7 +83,7 @@ class Test(unittest.TestCase):
 
         # Client 2 logs out successfully
         client2.logout()
-        time.sleep(1)
+        logout(client2.username)
         client1.list_all_users()
         data = client1.conn.recv(DATA_SIZE)
         self.assert_response_contains(data, TEST_USERNAME_1)
@@ -89,10 +92,10 @@ class Test(unittest.TestCase):
         # Message is queued and delivered after logout/login
         client1.send_message(2, client1.username, TEST_MESSAGE + "_queued", client2.username)
 
-        client2 = self.add_client(TEST_USERNAME_2, port)
+        client2 = self.add_client(TEST_USERNAME_2, port, login=True)
 
         data = client2.conn.recv(DATA_SIZE)
-        # self.assert_response_contains(data, TEST_MESSAGE)
+        self.assert_response_contains(data, TEST_MESSAGE + "_queued")
 
         self.cleanup([client1, client2], server, server_thread)
 

@@ -55,7 +55,7 @@ class Client:
         with grpc.insecure_channel(str(self.host) + ':' + str(self.port)) as channel:
             stub = messages_pb2_grpc.ServerStub(channel)
             request = messages_pb2.MessageToServer(
-                opcode=opcode, username=self.username, target=target, message=message
+                opcode=str(opcode), username=self.username, target=target, message=message
                 )
             response = stub.ReceiveMessageFromClient(request)
 

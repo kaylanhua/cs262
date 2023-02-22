@@ -114,19 +114,22 @@ class Test(unittest.TestCase):
 
             # Client 2 logs out successfully
             server.logout(client2.username)
-            time.sleep(1)
-            client1.list_all_users()
-            data = client1.conn.recv(DATA_SIZE)
-            self.assert_response_contains(data, TEST_USERNAME_1)
-            self.assert_response_not_contains(data, TEST_USERNAME_2)
+
+            # Get list of users logged in from server
+            response = client1.list_all_users()
+            # response = client1.send_message('6')
+            self.assert_response_contains(response, TEST_USERNAME_1)
+            self.assert_response_not_contains(response, TEST_USERNAME_2)
 
             # Message is queued and delivered after logout/login
-            client1.send_message(2, client1.username, TEST_MESSAGE + "_queued", client2.username)
+            client1.send_message('2', client2.username, TEST_MESSAGE + "_queued")
 
-            client2 = self.add_client(TEST_USERNAME_2, port)
+            client2, _ = self.add_client(TEST_USERNAME_2, port)
 
-            data = client2.conn.recv(DATA_SIZE)
-            # self.assert_response_contains(data, TEST_MESSAGE)
+            # Get message from server
+            response = client2.send_message('6')
+            self.assert_response_contains(response, TEST_USERNAME_1)
+            self.assert_response_contains(response, TEST_MESSAGE + "_queued")
 
 
 if __name__ == '__main__':
