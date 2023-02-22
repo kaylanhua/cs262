@@ -90,9 +90,6 @@ class Server(messages_pb2_grpc.ServerServicer):
                     if self.sessions[username] is not None:
                         # someone else is logged into the requested account
                         toClient = "SERVER%KillSomeone else is already logged into this account. Goodbye!"
-                        # self.logout(username)
-                    # self.login(username, True)
-                    # toClient = f"User already exists. Welcome back, {username}.\n"
                 else:
                     # user does not exist yet, create new user and log in
                     self.create_account(username, True)
@@ -109,11 +106,11 @@ class Server(messages_pb2_grpc.ServerServicer):
                 if self.sessions[username] is not None:
                     # someone else is logged into the requested account
                     toClient = "SERVER%KillSomeone else is already logged into this account. Goodbye!"
-                    # self.logout(username)
                     return messages_pb2.ServerLog(message=toClient)
 
                 self.login(username, True)
                 toClient = f"Welcome back, {username}.\n"
+                
                 # Send undelivered messages, if any
                 pending = self.send_pending(self.messages, username, True)
                 if pending:
