@@ -27,7 +27,8 @@ More key decisions
 
 
 ## Testing Decisions
-- 
+- In order to keep our code robust to changes, we wanted to make sure that we had a robust testing suite. To do this, we wrote a monolithic test suite that tested all of the functionality of the server. This meant that we could test all of the functionality of the server and client with a single command, to ensure that any changes to either the server or client would not break the functionality of the other.
+- Our test uses mutliple threads to spawn a server and two clients. The clients then interact via the server, and the test checks that the server and clients are behaving as expected. The response values given by the server are checked in a non-fragile manner to ensure correct behavior, while being flexible to changes in the actual text returned by the server.
 
 
 ## Edge Cases
