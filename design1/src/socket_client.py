@@ -81,7 +81,7 @@ def threaded_receive(conn):
                 # print('Data (decoded):', data, ' len:', len(data))
 
                 if not data:
-                    printb('Uh oh, the server has died. Goodbye!')
+                    printb('Goodbye!')
                     break
                 elif "SERVER%Kill" in data: 
                     # Server has sent a signal to kill the client because of an invalid request 
@@ -173,6 +173,7 @@ class Client:
 
     def logout(self):
         '''Log out of account by closing connection to server.'''
+        self.send_message('3', self.username)
         self.conn.shutdown(socket.SHUT_RDWR)
         self.conn.close()
         printb('You are logged out. Exiting ...')
@@ -195,38 +196,47 @@ def Main():
 
     # log in / create account
     welcome_menu(client)
-    while True:
-        # sleep for a moment to improve user experience
-        time.sleep(0.5)
-        
-        if log_out:
-            exit()
 
-        # show menu to user
-        printb('Select an option: \n2 to send message, 3 to log out, 4 to delete account, 5 to list all online users.')
+    try:
 
-        # strip whitespace from input
-        op = input().replace(" ", "")
+        while True:
+            # sleep for a moment to improve user experience
+            time.sleep(0.5)
+            
+            if log_out:
+                exit()
 
-        # take action based on user input
-        if op == "2":
-            # send message
-            client.query_message()
-        elif op == "3":
-            # logout
-            client.send_message('3', client.username)
-            client.logout()
-            exit()
-        elif op == "4":
-            # delete account
-            client.send_message('4', client.username)
-            client.logout()
-            exit()
-        elif op == "5":
-            # list all users
-            client.list_all_users()
-        else:
-            print('Invalid input. Please try again.')
+            # show menu to user
+            printb('Select an option: \n2 to send message, 3 to log out, 4 to delete account, 5 to list all online users.')
+
+            # strip whitespace from input
+            op = input().replace(" ", "")
+
+            # take action based on user input
+            if op == "2":
+                # send message
+                client.query_message()
+            elif op == "3":
+                # logout
+                client.send_message('3', client.username)
+                client.logout()
+                exit()
+            elif op == "4":
+                # delete account
+                client.send_message('4', client.username)
+                client.logout()
+                exit()
+            elif op == "5":
+                # list all users
+                client.list_all_users()
+            else:
+                print('Invalid input. Please try again.')
+
+    except KeyboardInterrupt as e:
+        # Ensure client is properly logged out if user presses Ctrl+C
+        client.logout()
+        time.sleep(1)
+        exit()
 
 
 if __name__ == '__main__':

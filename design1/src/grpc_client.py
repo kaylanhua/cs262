@@ -74,9 +74,9 @@ class Client:
         '''Welcome menu for new users.'''
         print(bcolors.OKBLUE + '''
  __     __     ______     __         ______     ______     __    __     ______
-/\ \  _ \ \   /\  ___\   /\ \       /\  ___\   /\  __ \   /\ "-./  \   /\  ___\
-\ \ \/ ".\ \  \ \  __\   \ \ \____  \ \ \____  \ \ \/\ \  \ \ \-./\ \  \ \  __\
- \ \__/".~\_\  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_____\
+/\ \  _ \ \   /\  ___\   /\ \       /\  ___\   /\  __ \   /\ "-./  \   /\  ___\ 
+\ \ \/ ".\ \  \ \  __\   \ \ \____  \ \ \____  \ \ \/\ \  \ \ \-./\ \  \ \  __\ 
+ \ \__/".~\_\  \ \_____\  \ \_____\  \ \_____\  \ \_____\  \ \_\ \ \_\  \ \_____\ 
   \/_/   \/_/   \/_____/   \/_____/   \/_____/   \/_____/   \/_/  \/_/   \/_____/
 
 ''' + bcolors.ENDC )
@@ -110,6 +110,7 @@ class Client:
 
     def logout(self):
         '''Log out of account by closing connection to server.'''
+        self.send_message('3')
         exit()
 
 
@@ -131,33 +132,38 @@ def Main():
     # log in / create account
     client.welcome_menu()
 
-    while True:
-        # sleep for a moment to improve user experience
-        time.sleep(0.5)
+    try:
 
-        # show menu to user
-        printb('Select an option: \n2 to send message, 3 to log out, 4 to delete account, 5 to list all online users.')
+        while True:
+            # sleep for a moment to improve user experience
+            time.sleep(0.5)
 
-        # strip whitespace from input
-        op = input().replace(" ", "")
+            # show menu to user
+            printb('Select an option: \n2 to send message, 3 to log out, 4 to delete account, 5 to list all online users.')
 
-        # take action based on user input
-        if op == "2":
-            # send message
-            client.query_message()
-        elif op == "3":
-            # logout
-            client.send_message('3')
-            client.logout()
-        elif op == "4":
-            # delete account
-            client.send_message('4')
-            client.logout()
-        elif op == "5":
-            # list all users
-            client.list_all_users()
-        else:
-            printb('Invalid input. Please try again.')
+            # strip whitespace from input
+            op = input().replace(" ", "")
+
+            # take action based on user input
+            if op == "2":
+                # send message
+                client.query_message()
+            elif op == "3":
+                # logout
+                client.logout()
+            elif op == "4":
+                # delete account
+                client.send_message('4')
+                client.logout()
+            elif op == "5":
+                # list all users
+                client.list_all_users()
+            else:
+                printb('Invalid input. Please try again.')
+    
+    except KeyboardInterrupt as e:
+        # Ensure client is properly logged out if user presses Ctrl+C
+        client.logout()
 
 
 if __name__ == '__main__':
