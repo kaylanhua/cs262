@@ -31,10 +31,16 @@ Prerequisites:
 To run the server, locate to the socket folder and edit the server.py file to have global variable host set to 'localhost' and port set to some N where N > 1024. Then, set the host and port to the same values inside of client.py.
 
 Finally, in one terminal, start the server by running the following command
-``` $ python server.py ```
+```bash
+$ cd design1/src
+$ python server.py 
+```
 
 and start the client in another terminal with the command
-``` $ python client.py ```
+```bash
+$ cd design1/src
+$ python client.py 
+```
 
 Then, everything is ready to go.
 
