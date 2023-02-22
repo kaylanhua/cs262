@@ -32,6 +32,16 @@ class Client:
         self.port = port
         self.username = ''
 
+    def create_account(self, username):
+        '''Create new account.'''
+        self.username = username
+        self.send_message('0', username)
+
+    def login(self, username):
+        '''Log in to existing account.'''
+        self.username = username
+        self.send_message('1', username)
+
     def send_message(self, opcode, target=None, message=None):
         '''Send message to server with opcode, username, message, and target.'''
         with grpc.insecure_channel(host + ':' + port) as channel:
@@ -62,16 +72,15 @@ class Client:
         while valid is False:
             response = input().replace(" ", "")
             if response == '0':
-                # create account or login (same effect)
+                # create account
                 print('Please enter your username.')
-                self.username = get_username()
-                self.send_message('0')
+                self.create_account(get_username())
                 valid = True
                 
             elif response == '1':
+                # log in
                 print('Please enter your username.')
-                self.username = get_username()
-                self.send_message('1')
+                self.login(get_username())
                 valid = True
 
             else:

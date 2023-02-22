@@ -130,7 +130,7 @@ class Server(messages_pb2_grpc.ServerServicer):
             
             # LIST ALL USERS    
             elif opcode == '5':
-                toClient = "[ALL ACCOUNTS]" + str(list(sessions.keys()))
+                toClient = "[ALL ACCOUNTS]" + str([key for key in sessions.keys() if sessions[key] is not None and sessions[key].fileno() != -1])
             
             # QUERYING FOR MESSAGES
             # this is never explicitly chosen by users, this code is used by the client to automatically listen for incoming messages
@@ -142,16 +142,16 @@ class Server(messages_pb2_grpc.ServerServicer):
             return messages_pb2.ServerLog(message=toClient)
     
 
-def serve():
+def serve(host, port):
     # basic gRPC server set up using info from the auto generated messages_pb2_grpc
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     messages_pb2_grpc.add_ServerServicer_to_server(Server(), server)
-    server.add_insecure_port(host + ':' + port) 
+    server.add_insecure_port(host + ':' + str(port)) 
     server.start()
-    print("Server started, listening on " + port)
+    print("Server started, listening on " + str(port))
     server.wait_for_termination()
 
 
 if __name__ == '__main__':
     logging.basicConfig()
-    serve()
+    serve(host, port)
