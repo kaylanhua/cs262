@@ -78,12 +78,12 @@ def threaded(c):
             if opcode == '0':
                 if username in sessions:
                     # if user already exists, log in
-                    login(username, c)
-                    to_client(username, f"User already exists. Welcome back, {username}.\n")
                     if sessions[username] is not None:
                         # someone else is logged into the requested account
-                        toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
+                        toClient = "KillSomeone else has logged into this account so you're being logged out. Goodbye!"
                         logout(username)
+                    login(username, c)
+                    to_client(username, f"User already exists. Welcome back, {username}.\n")
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, c)
@@ -93,12 +93,12 @@ def threaded(c):
             elif opcode == '1': # log in
                 if username not in sessions:
                     # user does not exist, give error
-                    to_client(username, "Account does not exist. Please create an account first.", conn=c)
+                    to_client(username, "KillAccount does not exist. Please create an account first.", conn=c)
                     break
 
                 if sessions[username] is not None:
                     # someone else is logged into the requested account
-                    to_client(username, "Someone else has logged into this account so you're being logged out. Goodbye!")
+                    to_client(username, "KillSomeone else has logged into this account so you're being logged out. Goodbye!")
                     logout(username)
 
                 login(username, c)
@@ -122,8 +122,6 @@ def threaded(c):
 
             # LOG OUT
             elif opcode == '3':
-                # with server_lock:
-                # to_client(username, "You have logged out. Goodbye!")
                 logout(username)
 
             # DELETE ACCOUNT

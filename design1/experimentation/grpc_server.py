@@ -44,12 +44,14 @@ class Server(messages_pb2_grpc.ServerServicer):
         '''
         toClient = None
         if username in messages and messages[username] is not None:
+            # determines whether the message to be sent is a live or queried message
             if justLoggedIn:
                 info_msg = f"You have {len(messages[username])} new messages since you last logged in:\n"
             else:
                 info_msg = f"\nNew message!\n"
             toClient = info_msg
 
+            # combine all backlogged messages into one larger message to send to client
             for sender, message in messages[username]:
                 toClient += f"[{sender}] {message}\n"
             messages.pop(username)
@@ -70,12 +72,12 @@ class Server(messages_pb2_grpc.ServerServicer):
             if opcode == '0':
                 if username in sessions:
                     # user already exists, log in
-                    login(username, True)
-                    toClient = f"User already exists. Welcome back, {username}.\n"
                     if sessions[username] is not None:
                         # someone else is logged into the requested account
-                        toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
+                        toClient = "SERVER%KillSomeone else has logged into this account so you're being logged out. Goodbye!"
                         logout(username)
+                    login(username, True)
+                    toClient = f"User already exists. Welcome back, {username}.\n"
                 else:
                     # user does not exist yet, create new user and log in
                     create_account(username, True)
@@ -85,13 +87,13 @@ class Server(messages_pb2_grpc.ServerServicer):
             elif opcode == '1': # log in
                 if username not in sessions:
                     # user does not exist, give error
-                    toClient = "Account does not exist. Please create an account first."
+                    toClient = "SERVER%KillAccount does not exist. Please create an account first."
                     logout(username)
                     return messages_pb2.ServerLog(message=toClient)
 
                 if sessions[username] is not None:
                     # someone else is logged into the requested account
-                    toClient = "Someone else has logged into this account so you're being logged out. Goodbye!"
+                    toClient = "SERVER%KillSomeone else has logged into this account so you're being logged out. Goodbye!"
                     logout(username)
                     return messages_pb2.ServerLog(message=toClient)
                 
@@ -130,7 +132,7 @@ class Server(messages_pb2_grpc.ServerServicer):
             
             # LIST ALL USERS    
             elif opcode == '5':
-                toClient = "[ALL ACCOUNTS]" + str([key for key in sessions.keys() if sessions[key] is not None and sessions[key].fileno() != -1])
+                toClient = "[ALL ACCOUNTS]" + str([key for key in sessions.keys() if sessions[key] is not None])
             
             # QUERYING FOR MESSAGES
             # this is never explicitly chosen by users, this code is used by the client to automatically listen for incoming messages

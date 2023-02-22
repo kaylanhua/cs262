@@ -50,3 +50,5 @@ More key decisions
 
 ## Comparing gRPC
 Add to your notebook comparisons over the complexity of the code, any performance differences, and the size of the buffers being sent back and forth between the client and the server.
+
+- [ ] explain max packet size of 800
