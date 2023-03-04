@@ -1,11 +1,11 @@
 # to do
 
 ## each virtual machine must have
-- [ ] clock rate: random number between 1 and 6
-- [ ] network queue which holds incoming messages
+- [x] clock rate: random number between 1 and 6
+- [x] network queue which holds incoming messages
 - [ ] listen on one or more sockets for messages
 - [ ] connect to each of the other machines upon initialization
-- [ ] open a file as a log
+- [x] open a file as a log
 - [ ] logical clock
 
 ## after initialization
