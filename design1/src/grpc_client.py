@@ -1,5 +1,3 @@
-"""The Python implementation of the GRPC helloworld.Greeter client."""
-
 from __future__ import print_function
 
 import logging
@@ -14,7 +12,7 @@ from socket_client import get_username, get_message, printb, bcolors
 
 # GLOBALS --------------------------------
 
-HOST = 'localhost'  # alternatively, use ip address of external server
+HOST = '10.250.94.109'  # alternatively, use ip address of external server
 PORT = '50051'
 
 # colors for terminal output

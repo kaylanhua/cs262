@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package messages;
+
+// The request message containing the user's name.
+message MessageToServer {
+    string opcode = 1;
+    string username = 5;
+    string target = 3;
+    string message = 4;
+}
+
+// Universal container for the response messages sent by the server after having been queried by the client
+message ServerLog {
+    string message = 1; 
+}
+
+// The service definition of the main Server
+service Server {
+    // Receives a message from the client and sends some log back
+    rpc ReceiveMessageFromClient (MessageToServer) returns (ServerLog) {}
+}
