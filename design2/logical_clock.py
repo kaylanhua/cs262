@@ -1,7 +1,7 @@
 
 class LogicalClock:
     
-    def __init__(self, time):
+    def __init__(self):
         self.time = 0
 
     def update(self, new_time):
