@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Kill previous run 
+# Kill previous run
 pkill -f main.py
 
 TICKS_PS_A=1
