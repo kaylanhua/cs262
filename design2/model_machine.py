@@ -1,17 +1,16 @@
 # ----- HEADERS -----
 
 from collections import deque
-import time 
+import time
 import csv
 from logical_clock import LogicalClock
 from random import randint
-import select
 import socket
 import random
 from _thread import start_new_thread
 
 # ----- VARIABLES -----
-HOST = 'localhost'  
+HOST = 'localhost'
 
 BASE_PORT = 6918
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
@@ -26,7 +25,8 @@ def global_time_ms():
 class ModelMachine:
 
     def __init__(self, id, ticks_ps):
-        assert id in PORTS.keys(), 'Invalid machine id'
+        # Check that user is valid (i.e. named A, B, or C)
+        assert id in PORTS.keys(), 'Invalid machine id. Please use A, B, or C.'
 
         self.id = id
         self.ticks_ps = float(ticks_ps)
@@ -36,11 +36,12 @@ class ModelMachine:
         self.logical_clock = LogicalClock()
         self.last_tick_time = global_time_ms()
 
+        # IDs of other machines
         other_ids = [id for id in PORTS.keys() if id != self.id]
 
         # Start server (spawns separate threads for each incoming connection)
         start_new_thread(self.start_server, (PORTS[id],))
-        
+
         # Wait for servers to start
         time.sleep(1)
 
@@ -53,7 +54,7 @@ class ModelMachine:
         csv.writer(open(f'machine_{self.id}_log.csv', 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
 
         self.cycle()
-    
+
 
 
     def log(self, event_type):
@@ -61,10 +62,10 @@ class ModelMachine:
         with open(self.filename, 'a') as f:
             writer = csv.writer(f)
             writer.writerow([event_type, time.time(), len(self.queue), self.logical_clock.time])
-    
+
 
     def send_event(self, id):
-        '''Send a message to antoher process (and log event)'''
+        '''Send a message to another process (and log event)'''
         message = str(self.logical_clock.time) + '%|'
         self.connections[id].sendall(message.encode('ascii'))
         self.log(f'SEND TO {id}')
@@ -77,7 +78,7 @@ class ModelMachine:
 
 
     def cycle(self):
-        '''start infinite cycle loop'''
+        '''Start infinite cycle loop to take tick action'''
         while True:
             if global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps:
                 self.last_tick_time = global_time_ms()
@@ -85,7 +86,7 @@ class ModelMachine:
 
 
     def tick(self):
-        '''action to take upon a tick'''
+        '''Action to take upon a tick'''
         print(self.id, ' tick')
         if len(self.queue) > 0:
             # Process message on queue
@@ -94,7 +95,7 @@ class ModelMachine:
             print(f'Popped {logical_time} from queue (new length: {len(self.queue)}, new logical time {self.logical_clock.time})')
 
         elif random.random() < P_INTERNAL_EVENT:
-            # Internal event 
+            # Internal event
             self.internal_event()
 
         else:
@@ -102,7 +103,7 @@ class ModelMachine:
             #   if n == 0, send to one machine
             #   if n == 1, send to other machine
             #   if n == 2, send to both machines
-            n = randint(0, 0)
+            n = randint(0, 2)
             if n in [0, 2]:
                 self.send_event(list(self.connections.keys())[0])
             if n in [1, 2]:
@@ -160,7 +161,7 @@ class ModelMachine:
             if not data:
                 raise ValueError
 
-            # split incoming message into distict packets (delimited by '|')
+            # split incoming message into distinct packets (delimited by '|')
             packets = data.split('|')
             for packet in packets:
                 if packet == '':
@@ -169,10 +170,3 @@ class ModelMachine:
                 self.queue.append(logical_time)
                 self.log('RECEIVED FROM ' + str(c.getpeername()))
                 print(f'Added {logical_time} to queue (new length: {len(self.queue)})')
-
-    
-
-if __name__ == '__main__':
-    test = ModelMachine() # name, port
-    test.log()
-    print("testing csv done")
