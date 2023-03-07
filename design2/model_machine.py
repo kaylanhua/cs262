@@ -11,7 +11,6 @@ from _thread import start_new_thread
 
 # ----- VARIABLES -----
 HOST = 'localhost'
-
 BASE_PORT = 6918
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
 P_INTERNAL_EVENT = 0.7
@@ -76,14 +75,12 @@ class ModelMachine:
         self.log(f'INTERNAL EVENT')
         self.logical_clock.increment()
 
-
     def cycle(self):
         '''Start infinite cycle loop to take tick action'''
         while True:
             if global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps:
                 self.last_tick_time = global_time_ms()
                 self.tick()
-
 
     def tick(self):
         '''Action to take upon a tick'''
