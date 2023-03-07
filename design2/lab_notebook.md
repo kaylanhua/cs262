@@ -16,3 +16,26 @@ In regards to the self.cycle() function, the ModelMachine waits for global_time_
 
 
 ## Testing Decisions
+
+
+---
+
+# Analysis
+
+## Base case
+For the base case of P(internal event) = 0.7, we ran five different tests using three different machines each. We fed in tick rates for the following five experiments and let the system run for one minute each:
+
+| Experiment # | A tick rate | B tick rate | C tick rate |
+| --- | --- | --- | --- |
+| i | 1 | 1 | 1 |
+| ii | 1 | 2 | 3 |
+| iii | 1 | 3 | 6 |
+| iv | 3 | 4 | 5 |
+| v | 4 | 5 | 6 |
+
+The results for the logical clock divergence in these five cases, when plotted agianst the global time, can be seen below. 
+
+
+add in observations about
+- [ ] gaps in the logical clock values 
+- [ ] length of the message queue
