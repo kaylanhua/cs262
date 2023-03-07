@@ -12,9 +12,8 @@ from _thread import start_new_thread
 # ----- VARIABLES -----
 HOST = 'localhost'
 
-BASE_PORT = 6918
+BASE_PORT = 6927
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
-P_INTERNAL_EVENT = 0.7
 
 # ----- FUNCTIONS -----
 
@@ -24,15 +23,18 @@ def global_time_ms():
 
 class ModelMachine:
 
-    def __init__(self, id, ticks_ps):
+    def __init__(self, id, ticks_ps, out_dir, p_internal):
         # Check that user is valid (i.e. named A, B, or C)
         assert id in PORTS.keys(), 'Invalid machine id. Please use A, B, or C.'
 
         self.id = id
         self.ticks_ps = float(ticks_ps)
+        self.out_dir = out_dir
+        self.p_internal = float(p_internal)
+
         self.queue = deque()
         self.connections = dict()
-        self.filename = f'machine_{id}_log.csv'
+        self.filename = f'{self.out_dir}/machine_{id}_log.csv'
         self.logical_clock = LogicalClock()
         self.last_tick_time = global_time_ms()
 
@@ -51,7 +53,7 @@ class ModelMachine:
             conn.connect((HOST, PORTS[id]))
             self.connections[id] = conn
 
-        csv.writer(open(f'machine_{self.id}_log.csv', 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
+        csv.writer(open(self.filename, 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
 
         self.cycle()
 
@@ -79,10 +81,12 @@ class ModelMachine:
 
     def cycle(self):
         '''Start infinite cycle loop to take tick action'''
-        while True:
+        start_time = global_time_ms()
+        while start_time - global_time_ms() < 60_000:
             if global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps:
                 self.last_tick_time = global_time_ms()
                 self.tick()
+        print('Done')
 
 
     def tick(self):
@@ -94,7 +98,7 @@ class ModelMachine:
             self.logical_clock.update(int(logical_time))
             print(f'Popped {logical_time} from queue (new length: {len(self.queue)}, new logical time {self.logical_clock.time})')
 
-        elif random.random() < P_INTERNAL_EVENT:
+        elif random.random() < self.p_internal:
             # Internal event
             self.internal_event()
 
@@ -168,5 +172,5 @@ class ModelMachine:
                     continue
                 logical_time = packet.split('%')[0]
                 self.queue.append(logical_time)
-                self.log('RECEIVED FROM ' + str(c.getpeername()))
+                # self.log('RECEIVED FROM ' + str(c.getpeername()))
                 print(f'Added {logical_time} to queue (new length: {len(self.queue)})')
