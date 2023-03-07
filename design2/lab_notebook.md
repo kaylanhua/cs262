@@ -8,3 +8,8 @@ Once you have run this on three virtual machines that can vary their internal ti
 You may use whatever packages or support code for the construction of the model machines and for the communication between the processes. 
 
 You will turn in both the code (or a pointer to your repo containing the code) and the lab notebook. You will also demo this, presenting your code and choices, during demo day 2.
+
+---
+
+# Model Machine Decisions
+In regards to the self.cycle() function, the ModelMachine waits for global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps to be true as opposed to waiting for a modulo to be matched. This is because the exact instance at which the ms matches the tick benchmark might be missed. 
