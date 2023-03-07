@@ -11,5 +11,8 @@ You will turn in both the code (or a pointer to your repo containing the code) a
 
 ---
 
-# Model Machine Decisions
+## Model Machine Decisions
 In regards to the self.cycle() function, the ModelMachine waits for global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps to be true as opposed to waiting for a modulo to be matched. This is because the exact instance at which the ms matches the tick benchmark might be missed, so we want to check duration as opposed to checking the raw global time. 
+
+
+## Testing Decisions

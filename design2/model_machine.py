@@ -12,7 +12,7 @@ from _thread import start_new_thread
 # ----- VARIABLES -----
 
 HOST = 'localhost'
-BASE_PORT = 6940
+BASE_PORT = 6975
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
 
 DURATION = 60
