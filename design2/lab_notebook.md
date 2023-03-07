@@ -7,15 +7,19 @@ Once you have run this on three virtual machines that can vary their internal ti
 
 You may use whatever packages or support code for the construction of the model machines and for the communication between the processes. 
 
-You will turn in both the code (or a pointer to your repo containing the code) and the lab notebook. You will also demo this, presenting your code and choices, during demo day 2.
 
 ---
 
 ## Model Machine Decisions
+Our model relies primarily on two classes ModelMachine in model_machine.py, which calls the rudimentary LogicalClock class in logical_clock.py. The logical clock contains only two functions—one to update to a new logical clock time given by the callee and one to simply increment the current internal self.time attribute of the logical clock.
+
+Meanwhile, in creating ModelMachine, we decided to implement peer to peer connections as opposed to connecting to a central server. This is in an effort to
+
 In regards to the self.cycle() function, the ModelMachine waits for global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps to be true as opposed to waiting for a modulo to be matched. This is because the exact instance at which the ms matches the tick benchmark might be missed, so we want to check duration as opposed to checking the raw global time. 
 
 
 ## Testing Decisions
+In terms of testing, we 
 
 
 ---
@@ -33,7 +37,7 @@ For the base case of P(internal event) = 0.7, we ran five different tests using 
 | iv | 3 | 4 | 5 |
 | v | 4 | 5 | 6 |
 
-The results for the logical clock divergence in these five cases, when plotted agianst the global time, can be seen below. 
+The results for the logical clock divergence in these five cases, when plotted against the global time, can be seen in the plots.ipynb file. There, we also observe the differences in message queue length when varying the tick rate parameters. 
 
 
 add in observations about
