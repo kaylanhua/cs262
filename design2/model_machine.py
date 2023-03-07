@@ -10,9 +10,12 @@ import random
 from _thread import start_new_thread
 
 # ----- VARIABLES -----
+
 HOST = 'localhost'
 BASE_PORT = 6918
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
+
+DURATION = 60
 
 # ----- FUNCTIONS -----
 
@@ -80,7 +83,7 @@ class ModelMachine:
     def cycle(self):
         '''Start infinite cycle loop to take tick action'''
         start_time = global_time_ms()
-        while start_time - global_time_ms() < 60_000:
+        while global_time_ms() - start_time < DURATION * 1000:
             if global_time_ms() - self.last_tick_time > 1000 / self.ticks_ps:
                 self.last_tick_time = global_time_ms()
                 self.tick()
@@ -88,12 +91,11 @@ class ModelMachine:
 
     def tick(self):
         '''Action to take upon a tick'''
-        print(self.id, ' tick')
         if len(self.queue) > 0:
             # Process message on queue
             logical_time = self.queue.popleft()
             self.logical_clock.update(int(logical_time))
-            print(f'Popped {logical_time} from queue (new length: {len(self.queue)}, new logical time {self.logical_clock.time})')
+            print(f'{self.id} - Popped {logical_time} from queue (new length: {len(self.queue)}, new logical time {self.logical_clock.time})')
 
         elif random.random() < self.p_internal:
             # Internal event
@@ -154,11 +156,7 @@ class ModelMachine:
                 print('> HOMIE DEPARTURE ALERT')
                 break
 
-            print('Data (raw):', data, ' len:', len(data))
-
             data = data.decode('ascii')
-            print('Data (decoded):', data, ' len:', len(data))
-
             if not data:
                 raise ValueError
 
