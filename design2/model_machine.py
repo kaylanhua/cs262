@@ -13,7 +13,7 @@ from _thread import start_new_thread
 # ----- VARIABLES -----
 HOST = 'localhost'  
 
-BASE_PORT = 6915
+BASE_PORT = 6918
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
 P_INTERNAL_EVENT = 0.7
 
@@ -50,11 +50,11 @@ class ModelMachine:
             conn.connect((HOST, PORTS[id]))
             self.connections[id] = conn
 
-        # TODO: erase and restart file upon intialization
-        csv.writer(open('machine_log.csv', 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
+        csv.writer(open(f'machine_{self.id}_log.csv', 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
 
         self.cycle()
     
+
 
     def log(self, event_type):
         '''log to csv'''
@@ -69,7 +69,6 @@ class ModelMachine:
         self.connections[id].sendall(message.encode('ascii'))
         self.log(f'SEND TO {id}')
         self.logical_clock.increment()
-
 
     def internal_event(self):
         '''Model internal event'''
@@ -168,6 +167,7 @@ class ModelMachine:
                     continue
                 logical_time = packet.split('%')[0]
                 self.queue.append(logical_time)
+                self.log('RECEIVED FROM ' + str(c.getpeername()))
                 print(f'Added {logical_time} to queue (new length: {len(self.queue)})')
 
     
