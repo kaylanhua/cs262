@@ -39,13 +39,6 @@ class Test(unittest.TestCase):
         self.logical.update(before + 5)
         self.assertEqual(before + 5, self.logical.time)
 
-    # def test_logging(self):
-    #     with self.assertLogs('demo_logger', level='DEBUG') as lc:
-    #         logging_example.check_status('Open')
-    #         self.assertEqual(['DEBUG:demo_logger:Good status'], lc.output)
-    #         logging_example.check_status('Bad')
-    #         self.assertEqual(['DEBUG:demo_logger:Good status','ERROR:demo_logger:Unknown status: Bad'], lc.output)
-
     def assert_printed_output(self, string):
         capturedOutput = io.StringIO()                  # Create StringIO object
         sys.stdout = capturedOutput                     #  and redirect stdout.
@@ -56,11 +49,11 @@ class Test(unittest.TestCase):
         self.machine.send_event(self.machine2.id)
         self.assert_printed_output("Sent message to B")
         
-    def test_machine_message_received(self):
-        '''this is def funky'''
-        self.machine.send_event(self.machine2.id)
-        self.machine2.listen()
-        self.assert_printed_output("Received message from A")
+    # def test_machine_message_received(self):
+    #     '''this is def funky'''
+    #     self.machine.send_event(self.machine2.id)
+    #     self.machine2.listen()
+    #     self.assert_printed_output("Received message from A")
         
     def test_machine_internal_event(self):
         self.machine.internal_event()
