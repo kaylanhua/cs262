@@ -81,11 +81,13 @@ The final numbers come out to 384, 380, and 386, respectively (for machines A, B
 
 #### Queue Length
 When looking at the queues, the result from 1, 3, 6 is again the most interesting:
+
 ![img](./run-ticks-1-3-6--p-0.7/q_plot_20.png)
 
 The first, slower machine suffers greatly because it is so slow at digesting from its own queue and the other machines are so fast to send new messages. This explains the drift in time synchonization. 
 
 Meanwhile, for the other cases, we don't see any of the same issues:
+
 ![img](./run-ticks-1-1-1--p-0.7/q_plot_20.png)
 
 ![img](./run-ticks-4-5-6--p-0.7/q_plot_20.png)
@@ -95,3 +97,26 @@ Meanwhile, for the other cases, we don't see any of the same issues:
 ---
 
 ## Different Internal Event Probabilities
+
+### Testing P=0.3
+When the probability of an internal event is significantly smaller (i.e. 0.3), we see some markedly different results. In running three experiments, we see the following drifts in times:
+
+![img](./run-ticks-1-1-1--p-0.3/logical_clock_plot_20.png)
+
+![img](./run-ticks-1-3-6--p-0.3/logical_clock_plot_20.png)
+
+![img](./run-ticks-4-5-6--p-0.3/logical_clock_plot_20.png)
+
+Again, we cut the graph short at 20 seconds so we can actually see what is going on with the first and third cases. Then, taking a look at the middle case, which is the interesting one, at 60 seconds:
+
+![img](./run-ticks-1-3-6--p-0.3/logical_clock_plot_60.png)
+
+and has final results of 154, 420, 438 for A, B, and C, respectively. From the average of 429, the drift away at 154 is 64%. Unsurprisingly, the lower the probability of internal events, the higher the logical time drift is. 
+
+Now, looking at the queue lengths:
+
+![img](./run-ticks-1-1-1--p-0.3/logical_clock_plot_20.png)
+
+![img](./run-ticks-1-3-6--p-0.3/logical_clock_plot_20.png)
+
+![img](./run-ticks-4-5-6--p-0.3/logical_clock_plot_20.png)
