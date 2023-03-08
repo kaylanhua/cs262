@@ -12,7 +12,7 @@ from _thread import start_new_thread
 # ----- VARIABLES -----
 
 HOST = 'localhost'
-BASE_PORT = 6753
+BASE_PORT = 6760
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
 
 DURATION = 60
@@ -25,7 +25,7 @@ def global_time_ms():
 
 class ModelMachine:
 
-    def __init__(self, id, ticks_ps, out_dir, p_internal, testing=False):
+    def __init__(self, id, ticks_ps, out_dir, p_internal):
         # Check that user is valid (i.e. named A, B, or C)
         assert id in PORTS.keys(), 'Invalid machine id. Please use A, B, or C.'
 
@@ -39,7 +39,6 @@ class ModelMachine:
         self.filename = f'{self.out_dir}/machine_{id}_log.csv'
         self.logical_clock = LogicalClock()
         self.last_tick_time = global_time_ms()
-        self.testing = testing
 
         # IDs of other machines
         other_ids = [id for id in PORTS.keys() if id != self.id]
@@ -57,9 +56,8 @@ class ModelMachine:
             self.connections[id] = conn
 
         csv.writer(open(self.filename, 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
-
-        if not testing:
-            self.cycle()
+        
+        self.cycle()
 
 
     def log(self, event_type):
@@ -132,9 +130,6 @@ class ModelMachine:
                 # establish connection with client
                 c, addr = self.socket.accept()
             except ConnectionAbortedError as e:
-                # if self.testing:
-                #     print("Connection aborted")
-                #     break
                 # else:
                     raise e
 

@@ -8,36 +8,36 @@ import sys
 
 class Test(unittest.TestCase):   
     def __init__(self, *args, **kwargs):
-        self.machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.7, testing=True)
-        self.machine2 = ModelMachine('B', randint(1,6), 'testing_logs', 0.7, testing=True)
-        self.machine3 = ModelMachine('C', randint(1,6), 'testing_logs', 0.7, testing=True)
-        self.logical = LogicalClock()
+        self.machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.7)
+    #     self.machine2 = ModelMachine('B', randint(1,6), 'testing_logs', 0.7, testing=True)
+    #     self.machine3 = ModelMachine('C', randint(1,6), 'testing_logs', 0.7, testing=True)
+    #     self.logical = LogicalClock()
         
     def test_one_machine_starts_correctly(self):
-        # machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.3, testing=True)
+        # machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.3)
         self.machine.listen()
-        self.machine.log()
+        # machine.log()
     
     # def test_two_machines_start_correctly(self):
-    #     # machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.3)
-    #     self.machine.listen()
-    #     self.machine.log()
+    #     machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.3)
+    #     machine.listen()
+    #     machine.log()
         
-    #     # machine2 = ModelMachine('B', randint(1,6), 'testing_logs', 0.3)
-    #     self.machine2.listen()
-    #     self.machine2.log()
+        # machine2 = ModelMachine('B', randint(1,6), 'testing_logs', 0.3)
+        # machine2.listen()
+        # machine2.log()
         
-    # def test_logical_clock_increment(self):
-    #     # logical = LogicalClock()
-    #     before = self.logical.time
-    #     self.logical.increment()
-    #     self.assertEqual(before, self.logical.time - 1)
+    def test_logical_clock_increment(self):
+        logical = LogicalClock()
+        before = logical.time
+        logical.increment()
+        self.assertEqual(before, logical.time - 1)
         
-    # def test_logical_clock_update(self):
-    #     # logical = LogicalClock()
-    #     before = self.logical.time
-    #     self.logical.update(before + 5)
-    #     self.assertEqual(before + 5, self.logical.time)
+    def test_logical_clock_update(self):
+        logical = LogicalClock()
+        before = logical.time
+        logical.update(before + 5)
+        self.assertEqual(before + 6, logical.time)
 
     # def assert_printed_output(self, string):
     #     capturedOutput = io.StringIO()                  # Create StringIO object
