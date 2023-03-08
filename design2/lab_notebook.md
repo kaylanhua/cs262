@@ -115,8 +115,10 @@ and has final results of 154, 420, 438 for A, B, and C, respectively. From the a
 
 Now, looking at the queue lengths:
 
-![img](./run-ticks-1-1-1--p-0.3/logical_clock_plot_20.png)
+![img](./run-ticks-1-1-1--p-0.3/q_plot_20.png)
 
-![img](./run-ticks-1-3-6--p-0.3/logical_clock_plot_20.png)
+![img](./run-ticks-1-3-6--p-0.3/q_plot_20.png)
 
-![img](./run-ticks-4-5-6--p-0.3/logical_clock_plot_20.png)
+![img](./run-ticks-4-5-6--p-0.3/q_plot_20.png)
+
+The queue length for the 1, 3, 6 case reaches around 100 (whereas in the earlier case, it was only around 40). This suggests that lower probability of internal events leads to longer backed up queues (makes sense, quite intuitive).
