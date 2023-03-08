@@ -7,15 +7,10 @@ import sys
 
 
 class Test(unittest.TestCase):   
-    def __init__(self, *args, **kwargs):
-        self.machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.7)
-    #     self.machine2 = ModelMachine('B', randint(1,6), 'testing_logs', 0.7, testing=True)
-    #     self.machine3 = ModelMachine('C', randint(1,6), 'testing_logs', 0.7, testing=True)
-    #     self.logical = LogicalClock()
-        
+
     def test_one_machine_starts_correctly(self):
-        # machine = ModelMachine('A', randint(1,6), 'testing_logs', 0.3)
-        self.machine.listen()
+        ModelMachine('A', 2, 'testing_logs', 0.3)
+        # self.machine.listen()
         # machine.log()
     
     # def test_two_machines_start_correctly(self):

@@ -8,11 +8,12 @@ from random import randint
 import socket
 import random
 from _thread import start_new_thread
+from os import path
 
 # ----- VARIABLES -----
 
 HOST = 'localhost'
-BASE_PORT = 6760
+BASE_PORT = 6740
 PORTS = {'A': BASE_PORT, 'B': BASE_PORT + 1, 'C': BASE_PORT + 2}
 
 DURATION = 60
@@ -29,11 +30,11 @@ class ModelMachine:
         # Check that user is valid (i.e. named A, B, or C)
         assert id in PORTS.keys(), 'Invalid machine id. Please use A, B, or C.'
 
+        # internal variables
         self.id = id
         self.ticks_ps = float(ticks_ps)
         self.out_dir = out_dir
         self.p_internal = float(p_internal)
-
         self.queue = deque()
         self.connections = dict()
         self.filename = f'{self.out_dir}/machine_{id}_log.csv'
@@ -54,8 +55,10 @@ class ModelMachine:
             conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             conn.connect((HOST, PORTS[id]))
             self.connections[id] = conn
+            assert conn
 
         csv.writer(open(self.filename, 'w')).writerow(['received', 'global time', 'len of queue', 'logical clock time'])
+        assert path.exists(self.filename)
         
         self.cycle()
 
@@ -73,7 +76,13 @@ class ModelMachine:
         message = str(self.logical_clock.time) + '%|'
         self.connections[id].sendall(message.encode('ascii'))
         self.log(f'SEND TO {id}')
+        
+        # unit test of logical clock incrementing
+        before = self.logical_clock.time
         self.logical_clock.increment()
+        assert self.logical_clock.time == before + 1
+        
+        # log event
         print(f'{self.id} - Sent {message} to {id}')
 
     def internal_event(self):
@@ -96,13 +105,17 @@ class ModelMachine:
             # Process message on queue
             logical_time = self.queue.popleft()
             self.logical_clock.update(int(logical_time))
+            assert self.logical_clock.time >= int(logical_time) + 1
+            
             print(f'{self.id} - Popped {logical_time} from queue (new length: {len(self.queue)}, new logical time {self.logical_clock.time})')
             self.log(f'POP FROM QUEUE')
         elif random.random() < self.p_internal:
+            assert len(self.queue) == 0
             # Internal event
             self.internal_event()
 
         else:
+            assert len(self.queue) == 0
             # Take random n:
             #   if n == 0, send to one machine
             #   if n == 1, send to other machine
