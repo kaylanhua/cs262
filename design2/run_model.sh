@@ -3,11 +3,11 @@
 # Kill previous run
 pkill -f main.py
 
-TICKS_PS_A=6
-TICKS_PS_B=6
-TICKS_PS_C=6
+TICKS_PS_A=1
+TICKS_PS_B=3
+TICKS_PS_C=5
 
-P_INTERNAL=0.1
+P_INTERNAL=0.7
 
 OUT_DIR="run-ticks-$TICKS_PS_A-$TICKS_PS_B-$TICKS_PS_C--p-$P_INTERNAL"
 
