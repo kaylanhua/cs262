@@ -6,24 +6,65 @@ import messages_pb2
 import messages_pb2_grpc
 
 from threading import Lock
+from _thread import start_new_thread
+
+import time 
+import socket
+
 from socket_client import bcolors
 from socket_server import printg
+from grpc_client import PORTS
+
+import csv
+from os import path
 
 # GLOBALS --------------------------------
 
 HOST = 'localhost'  # replace with 0.0.0.0 to open up to other machines
-PORT = '50051'
-
 server_lock = Lock()    # lock for server mutex
 
 # FUNCTIONS --------------------------------
 
 class Server(messages_pb2_grpc.ServerServicer):
 
-    def __init__(self):
-        self.sessions = dict()   # manages which users are currently logged in, as in the socket server
-        self.messages = dict()   # manages which users have outstanding messages which are yet to be delivered
+    def __init__(self, id, is_primary):
+        self.id = id
+        self.is_primary = is_primary
+        
+        self.sessions = dict()              # manages which users are currently logged in, as in the socket server
+        self.messages = dict()              # manages which users have outstanding messages which are yet to be delivered
+        self.database = dict()
+        self.commit_log = []                # of strings
+        self.pending_log = []               # of strings
+        self.replica_connections = dict()   # other replicas
+        self.filename = f'{self.out_dir}/{id}_db.csv'
 
+        # IDs of other machines
+        other_ids = [id for id in PORTS.keys() if id != self.id]
+
+        # Start replica server (spawns separate threads for each incoming connection)
+        start_new_thread(self.start_replica_server, (PORTS[id],))
+
+        # Wait for servers to start
+        time.sleep(1)
+
+        # Connect as client to other replica servers (in main thread)
+        for id in other_ids:
+            conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            conn.connect((HOST, PORTS[id]))
+            self.replica_connections[id] = conn
+            assert conn
+
+        print(f'Server {id} has connected to replicas {other_ids}')
+        
+        csv.writer(open(self.filename, 'w')).writerow(['message', 'status'])
+        assert path.exists(self.filename)
+        
+    def log(self, message, status="received"):
+        '''log to csv'''
+        with open(self.filename, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow([message, status])
 
     # following four functions taken from clean_server.py
     def create_account(self, username, connection):
@@ -42,6 +83,7 @@ class Server(messages_pb2_grpc.ServerServicer):
         if recipient not in self.messages:
             self.messages[recipient] = []
         self.messages[recipient].append((sender, message))
+        
 
     def start(self, host, port):
         # basic gRPC server set up using info from the auto generated messages_pb2_grpc
@@ -72,10 +114,22 @@ class Server(messages_pb2_grpc.ServerServicer):
             messages.pop(username)
         return toClient
 
+    def send_event(self, id, message):
+        '''Send a message to another process (and log event)'''
+        self.connections[id].sendall(message.encode('ascii'))
+        # self.log(f'SEND TO {id}')
+        
+        # log event
+        print(f'{self.id}: Sent {message} to {id}')
+        
+
     def ReceiveMessageFromClient(self, request, context):
         '''receive and parse a message from the client'''
 
         with server_lock:
+            # immediately add to pending log
+            self.pending_log.append(request)
+        
             # parse request structure
             opcode = request.opcode
             username = request.username
@@ -154,9 +208,3 @@ class Server(messages_pb2_grpc.ServerServicer):
                     toClient = res
 
             return messages_pb2.ServerLog(message=toClient)
-
-
-if __name__ == '__main__':
-    logging.basicConfig()
-    server = Server()
-    server.start(HOST, PORT)

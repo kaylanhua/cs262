@@ -13,7 +13,11 @@ from socket_client import get_username, get_message, printb, bcolors
 # GLOBALS --------------------------------
 
 HOST = 'localhost'  # alternatively, use ip address of external server
-PORT = '50051'
+# PORT = '50051'
+# PORTS = [PORT, PORT+1, PORT+2]
+
+PORT = 6740
+PORTS = {'A': PORT, 'B': PORT + 1, 'C': PORT + 2}
 
 # colors for terminal output
 class bcolors:
@@ -30,10 +34,11 @@ class bcolors:
 # FUNCTIONS --------------------------------
 
 class Client:
-    def __init__(self, host, port):
+    def __init__(self, host, port, replica_ids=PORTS):
         self.host = host
         self.port = port
         self.username = ''
+        self.replica_ids = replica_ids
 
     def create_account(self, username):
         '''Create new account.'''
@@ -57,8 +62,26 @@ class Client:
             request = messages_pb2.MessageToServer(
                 opcode=str(opcode), username=self.username, target=target, message=message
                 )
-            response = stub.ReceiveMessageFromClient(request)
-
+            try:
+                response = stub.ReceiveMessageFromClient(request)
+            except grpc.RpcError as e: 
+                # kTODO: detect if server is down, need to contact new leader
+                print("Server is down")
+                
+                # check if any ports are left
+                if self.port == PORT+2:
+                    print("all servers have died")
+                    log_out = True
+                    exit()
+                else: 
+                    # ask next port if it's the leader 
+                    while True:
+                        self.port += 1
+                        try:
+                            response = self.send_message('6')
+                        except grpc.RpcError as e:
+                            print("Server is down")
+        
         data = response.message
         if "SERVER%Kill" in data:
             # Server has sent a signal to kill the client because of an invalid request
