@@ -1,5 +1,5 @@
 from concurrent import futures
-import logging
+
 
 import grpc
 import messages_pb2
@@ -28,8 +28,13 @@ server_lock = Lock()    # lock for server mutex
 class Server(messages_pb2_grpc.ServerServicer):
 
     def __init__(self, id, is_primary):
+        # Check that user is valid (i.e. named A, B, or C)
+        assert id in PORTS.keys(), 'Invalid machine id. Please use A, B, or C.'
+        
         self.id = id
+        print(self.id)
         self.is_primary = is_primary
+        self.primary_port = PORTS['A']
         
         self.sessions = dict()              # manages which users are currently logged in, as in the socket server
         self.messages = dict()              # manages which users have outstanding messages which are yet to be delivered
@@ -37,16 +42,17 @@ class Server(messages_pb2_grpc.ServerServicer):
         self.commit_log = []                # of strings
         self.pending_log = []               # of strings
         self.replica_connections = dict()   # other replicas
-        self.filename = f'{self.out_dir}/{id}_db.csv'
+        self.filename = f'{id}_db.csv'
 
         # IDs of other machines
         other_ids = [id for id in PORTS.keys() if id != self.id]
-
-        # Start replica server (spawns separate threads for each incoming connection)
-        start_new_thread(self.start_replica_server, (PORTS[id],))
+        
+        # Start server (spawns separate threads for each incoming connection)
+        print(f'Starting socket for {id}')
+        start_new_thread(self.start_server, (PORTS[id],))
 
         # Wait for servers to start
-        time.sleep(1)
+        time.sleep(10)
 
         # Connect as client to other replica servers (in main thread)
         for id in other_ids:
@@ -59,6 +65,33 @@ class Server(messages_pb2_grpc.ServerServicer):
         
         csv.writer(open(self.filename, 'w')).writerow(['message', 'status'])
         assert path.exists(self.filename)
+        
+    def start_server(self, port):
+        # Start new with one thread for each machine
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.bind((HOST, port))
+        print("Socket binded to port", port)
+
+        # put the socket into listening mode
+        self.socket.listen(5)
+        print("Socket is listening!")
+
+        # a forever loop until client wants to exit
+        while True:
+
+            try:
+                # establish connection with client
+                c, addr = self.socket.accept()
+            except ConnectionAbortedError as e:
+                # else:
+                    raise e
+
+            print("-------------------")
+            print("> NEW HOMIE ALERT")
+            print('> Connected to :' + str(addr[0]) + ':' + str(addr[1]))
+
+            # Start a new thread and return its identifier
+            start_new_thread(self.listen, (c,))
         
     def log(self, message, status="received"):
         '''log to csv'''
@@ -83,7 +116,6 @@ class Server(messages_pb2_grpc.ServerServicer):
         if recipient not in self.messages:
             self.messages[recipient] = []
         self.messages[recipient].append((sender, message))
-        
 
     def start(self, host, port):
         # basic gRPC server set up using info from the auto generated messages_pb2_grpc
@@ -208,3 +240,30 @@ class Server(messages_pb2_grpc.ServerServicer):
                     toClient = res
 
             return messages_pb2.ServerLog(message=toClient)
+        
+    # thread function
+    def listen(self, c):
+        '''Thread function for receiving messages from other machines.'''
+
+        while True:
+            # data received from other machine
+            data = c.recv(1024)
+
+            # a thread has dropped, likely indicating that a server has died
+            if not data:
+                print('> HOMIE DEPARTURE ALERT')
+                break
+
+            data = data.decode('ascii')
+            if not data:
+                raise ValueError
+
+            # split incoming message into distinct packets (delimited by '|')
+            packets = data.split('|')
+            for packet in packets:
+                if packet == '':
+                    continue
+                # logical_time = packet.split('%')[0]
+                # self.queue.append(logical_time)
+                # self.log('RECEIVED FROM ' + str(c.getpeername()))
+                print(f'{self.id} - got a message from connection {c}')

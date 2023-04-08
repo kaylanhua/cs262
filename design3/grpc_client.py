@@ -66,21 +66,22 @@ class Client:
                 response = stub.ReceiveMessageFromClient(request)
             except grpc.RpcError as e: 
                 # kTODO: detect if server is down, need to contact new leader
-                print("Server is down")
+                print(f"DEATH: Server is down at port {self.port}")
                 
-                # check if any ports are left
-                if self.port == PORT+2:
-                    print("all servers have died")
-                    log_out = True
-                    exit()
-                else: 
-                    # ask next port if it's the leader 
-                    while True:
-                        self.port += 1
-                        try:
-                            response = self.send_message('6')
-                        except grpc.RpcError as e:
-                            print("Server is down")
+                # check if any ports are left and ask next port if it's the leader 
+                enter = True
+                while enter:
+                    if self.port == PORT+2:
+                        print("all servers have died")
+                        log_out = True
+                        exit()
+                    enter = False
+                    self.port += 1
+                    try:
+                        response = self.send_message('6')
+                    except grpc.RpcError as e:
+                        enter = True
+                        print("Server is down")
         
         data = response.message
         if "SERVER%Kill" in data:
