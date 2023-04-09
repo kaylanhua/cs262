@@ -9,15 +9,7 @@ import sys
 from _thread import start_new_thread
 
 from socket_client import get_username, get_message, printb, bcolors
-
-# GLOBALS --------------------------------
-
-HOST = 'localhost'  # alternatively, use ip address of external server
-# PORT = '50051'
-# PORTS = [PORT, PORT+1, PORT+2]
-
-PORT = 6740
-PORTS = {'A': PORT, 'B': PORT + 1, 'C': PORT + 2}
+from ports import PORTS, HOSTS
 
 # colors for terminal output
 class bcolors:
@@ -34,11 +26,11 @@ class bcolors:
 # FUNCTIONS --------------------------------
 
 class Client:
-    def __init__(self, host, port, replica_ids=PORTS):
-        self.host = host
-        self.port = port
+    def __init__(self, hosts, ports):
+        self.hosts = hosts
+        self.ports = ports
         self.username = ''
-        self.replica_ids = replica_ids
+        self.replica_ids = hosts.keys()
 
     def create_account(self, username):
         '''Create new account.'''
@@ -57,33 +49,41 @@ class Client:
     def send_message(self, opcode, target=None, message=None, doTime=False):
         start = time.time()
         '''Send message to server with opcode, username, message, and target.'''
-        with grpc.insecure_channel(str(self.host) + ':' + str(self.port)) as channel:
-            stub = messages_pb2_grpc.ServerStub(channel)
-            request = messages_pb2.MessageToServer(
-                opcode=str(opcode), username=self.username, target=target, message=message
-                )
-            try:
-                response = stub.ReceiveMessageFromClient(request)
-            except grpc.RpcError as e: 
-                # kTODO: detect if server is down, need to contact new leader
-                print(f"DEATH: Server is down at port {self.port}")
-                
-                # check if any ports are left and ask next port if it's the leader 
-                enter = True
-                while enter:
-                    if self.port == PORT+2:
-                        print("all servers have died")
-                        log_out = True
-                        exit()
-                    enter = False
-                    self.port += 1
-                    try:
-                        response = self.send_message('6')
-                    except grpc.RpcError as e:
-                        enter = True
-                        print("Server is down")
+        server_responses = {}
         
-        data = response.message
+        # Receive a message from each server
+        for replica_id, host, port in zip(self.replica_ids, self.hosts, self.ports):
+            with grpc.insecure_channel(str(host) + ':' + str(port)) as channel:
+                stub = messages_pb2_grpc.ServerStub(channel)
+                request = messages_pb2.MessageToServer(
+                    opcode=str(opcode), username=self.username, target=target, message=message
+                    )
+                try:
+                    response = stub.ReceiveMessageFromClient(request)
+                    server_responses[replica_id] = response.message
+                except grpc.RpcError as e: 
+                    # kTODO: detect if server is down, no action is taken
+                    print(f"DEATH: Server is down at port {port}")
+                    continue
+                
+        # check that at least 3 of the servers agree on the message
+        unique_responses = set(server_responses.values())
+        response_counts = {}
+        cclist = list(server_responses.values())
+        for response in unique_responses:
+            response_counts[response] = cclist.count(response)
+        max_response_count = max(response_counts.values())
+        
+        if max_response_count < 3:
+            # kill 
+            print(f'Server responses do not agree. Received {server_responses}')
+            log_out = True
+            exit()
+        else:
+            for response in unique_responses:
+                if response_counts[response] == max_response_count:
+                    data = response.message
+        
         if "SERVER%Kill" in data:
             # Server has sent a signal to kill the client because of an invalid request
             # (i.e. logging into an account which doesnt exist)
