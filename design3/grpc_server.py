@@ -36,6 +36,14 @@ class Server(messages_pb2_grpc.ServerServicer):
         csv.writer(open(self.filename, 'w'))
         assert path.exists(self.filename)
         
+        with open(self.filename, 'r') as csv_file:
+            reader = csv.reader(csv_file)
+            if len(list(reader)) > 1:
+                next(reader)
+                for row in reader:
+                    entries = row[0].split(',')
+                    self.queue_message(entries[1], entries[0], entries[2])
+                    
     def log_messages(self):
         '''log to csv and overwrite anything existing'''
         with open(self.filename, 'w') as f:
