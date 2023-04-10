@@ -67,7 +67,7 @@ class Client:
                     server_responses[replica_id] = response.message
                 except grpc.RpcError as e: 
                     # kTODO: detect if server is down, no action is taken
-                    print(f"DEATH: Server is down at port {port}")
+                    print(f"-- Server failure at {host}:{port}")
                     # Stop using server
                     self.dead_hosts.add(replica_id)
                     continue

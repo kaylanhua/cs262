@@ -90,7 +90,7 @@ class Server(messages_pb2_grpc.ServerServicer):
         messages_pb2_grpc.add_ServerServicer_to_server(self, server)
         server.add_insecure_port(host + ':' + str(port))
         server.start()
-        print("Server started, listening on " + str(port))
+        print("Server started, listening on " + host + ':' + str(port))
         server.wait_for_termination()
 
     def send_pending(self, messages, username, justLoggedIn=False):
