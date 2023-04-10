@@ -7,8 +7,8 @@ pkill -f main.py
 ttab -w python main.py --id=A &
 ttab -w python main.py --id=B &
 ttab -w python main.py --id=C &
-ttab -w python main.py --id=D &
-ttab -w python main.py --id=E &
+# ttab -w python main.py --id=D &
+# ttab -w python main.py --id=E &
 
 sleep 1
 

@@ -16,7 +16,7 @@ from os import path
 
 # GLOBALS --------------------------------
 
-HOST = 'localhost'  # replace with 0.0.0.0 to open up to other machines
+HOST = '0.0.0.0'  # replace with 0.0.0.0 to open up to other machines
 server_lock = Lock()    # lock for server mutex
 
 # FUNCTIONS --------------------------------
