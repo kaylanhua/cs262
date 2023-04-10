@@ -15,5 +15,3 @@ sleep 1
 # Run clients
 ttab -w python grpc_client.py &
 ttab -w python grpc_client.py &
-
-wait

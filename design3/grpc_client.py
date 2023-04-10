@@ -10,6 +10,7 @@ from _thread import start_new_thread
 
 from socket_client import get_username, get_message, printb, bcolors
 from ports import PORTS, HOSTS
+import os
 
 # colors for terminal output
 class bcolors:
@@ -31,6 +32,7 @@ class Client:
         self.ports = ports
         self.username = ''
         self.replica_ids = hosts.keys()
+        self.dead_hosts = set()
 
     def create_account(self, username):
         '''Create new account.'''
@@ -53,6 +55,8 @@ class Client:
         
         # Receive a message from each server
         for replica_id, host, port in zip(self.replica_ids, self.hosts.values(), self.ports.values()):
+            if replica_id in self.dead_hosts:
+                continue
             with grpc.insecure_channel(str(host) + ':' + str(port)) as channel:
                 stub = messages_pb2_grpc.ServerStub(channel)
                 request = messages_pb2.MessageToServer(
@@ -64,8 +68,10 @@ class Client:
                 except grpc.RpcError as e: 
                     # kTODO: detect if server is down, no action is taken
                     print(f"DEATH: Server is down at port {port}")
+                    # Stop using server
+                    self.dead_hosts.add(replica_id)
                     continue
-                
+
         # check that at least 3 of the servers agree on the message
         unique_responses = set(server_responses.values())
         response_counts = {}
@@ -76,9 +82,10 @@ class Client:
         
         if max_response_count < 3:
             # kill 
-            print(f'Server responses do not agree. Received {server_responses}')
+            # print(f'Server responses do not agree. Received {server_responses}')
+            print(f'More than two faults detected, shutting down.')
             log_out = True
-            exit()
+            os._exit(1)
         else:
             for response in unique_responses:
                 if response_counts[response] == max_response_count:
