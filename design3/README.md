@@ -56,5 +56,6 @@ Testing was done manually and through asserts. We wrote a script to automaticall
 - Incorrect IDs being fed in for the five replicas (we accept only A, B, C, D, E as replica names)
 - Two fault tolerance: clients stop receiving messages after three machines have died/the processes are killed and are told that the servers are down
 - Two Byzantine fault tolerance: when two replicas are not down but start sending incorrect messages to the clients, the clients will not ingest the corrupted messages at all because there is not a 3 replica consensus. 
-- Clients receiving messages that are 
+- Persistence: Clients receive messages that were pending even after all servers die and then come back on
+- Tested on two separate machines (3 servers on one, 2 on another, and clients are on either & all servers on one, clients on either)
 
