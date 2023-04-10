@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Kill previous run
-pkill -f main.py
+pkill -f grpc_client.py
 
-python main.py --id=A --is_primary &
-python main.py --id=B &
-python main.py --id=C &
+ttab -w python grpc_client.py &
+ttab -w python grpc_client.py &
+ttab -w python grpc_client.py &
 
 wait
