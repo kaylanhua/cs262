@@ -78,7 +78,12 @@ class Client:
         cclist = list(server_responses.values())
         for response in unique_responses:
             response_counts[response] = cclist.count(response)
-        max_response_count = max(response_counts.values())
+        try:
+            max_response_count = max(response_counts.values())
+        except ValueError:
+            print(server_responses)
+            print(response_counts)
+            raise
         
         if max_response_count < 3:
             # kill 

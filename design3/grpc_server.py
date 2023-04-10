@@ -31,27 +31,39 @@ class Server(messages_pb2_grpc.ServerServicer):
         print(f'initializing replica {self.id}')
         self.sessions = dict()              # manages which users are currently logged in, as in the socket server
         self.messages = dict()              # manages which users have outstanding messages which are yet to be delivered
-        self.filename = f'{id}_db.csv'
+        self.pending_db = f'{id}_pending_messages_db.csv'
+        self.sessions_db = f'{id}_sessions_db.csv'
         
-        csv.writer(open(self.filename, 'w'))
-        assert path.exists(self.filename)
-        
-        with open(self.filename, 'r') as csv_file:
-            reader = csv.reader(csv_file)
-            if len(list(reader)) > 1:
-                next(reader)
+        if path.exists(self.pending_db):
+            # Load pending messages from database
+            with open(self.pending_db, 'r') as csv_file:
+                reader = csv.reader(csv_file)
                 for row in reader:
-                    entries = row[0].split(',')
-                    self.queue_message(entries[1], entries[0], entries[2])
+                    self.queue_message(row[1], row[0], row[2])
+
+        if path.exists(self.sessions_db):
+            # Load persisted users from database
+            with open(self.sessions_db, 'r') as csv_file:
+                reader = csv.reader(csv_file)
+                for row in reader:
+                    self.create_account(row[0], None)
                     
     def log_messages(self):
-        '''log to csv and overwrite anything existing'''
-        with open(self.filename, 'w') as f:
+        '''write all PENDING messages to database csv (overwriting existing)'''
+        with open(self.pending_db, 'w') as f:
             writer = csv.writer(f)
-            writer.writerow(['recipient', 'sender', 'message'])
+            # writer.writerow(['recipient', 'sender', 'message'])
             for name in self.messages.keys():
                 for sender, message in self.messages[name]:
                     writer.writerow([name, sender, message])
+
+    def log_sessions(self):
+        '''write all existing usernames to database csv (overwriting existing)'''
+        with open(self.sessions_db, 'w') as f:
+            writer = csv.writer(f)
+            # writer.writerow(['recipient', 'sender', 'message'])
+            for username in self.sessions.keys():
+                writer.writerow([username])
 
     # following four functions taken from clean_server.py
     def create_account(self, username, connection):
@@ -70,6 +82,7 @@ class Server(messages_pb2_grpc.ServerServicer):
         if recipient not in self.messages:
             self.messages[recipient] = []
         self.messages[recipient].append((sender, message))
+        self.log_messages()
 
     def start(self, host, port):
         # basic gRPC server set up using info from the auto generated messages_pb2_grpc
@@ -98,6 +111,8 @@ class Server(messages_pb2_grpc.ServerServicer):
             for sender, message in messages[username]:
                 toClient += f"[{sender}] {message}\n"
             messages.pop(username)
+        
+        self.log_messages()
         return toClient
 
     def ReceiveMessageFromClient(self, request, context):
@@ -121,6 +136,7 @@ class Server(messages_pb2_grpc.ServerServicer):
                 else:
                     # user does not exist yet, create new user and log in
                     self.create_account(username, True)
+                    self.log_sessions()
                     toClient = f"Welcome to your new account, {username}."
 
             # LOG IN
@@ -169,6 +185,7 @@ class Server(messages_pb2_grpc.ServerServicer):
                 self.sessions.pop(username)
                 if username in self.messages:
                     self.messages.pop(username)
+                self.log_sessions()
 
             # LIST ALL USERS
             elif opcode == '5':
