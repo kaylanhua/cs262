@@ -41,3 +41,7 @@ all replicas have to keep a record of all other ports and who is alive
 
 
 database: write everything to a csv (all messages sent and received)
+
+questions
+- grpc + sockets?
+- what is sufficient to say that the system is fault tolerant?
