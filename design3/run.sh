@@ -3,10 +3,17 @@
 # Kill previous run
 pkill -f main.py
 
-python main.py --id=A &
-python main.py --id=B &
-python main.py --id=C &
-python main.py --id=D &
-python main.py --id=E &
+# Run servers
+ttab -w python main.py --id=A &
+ttab -w python main.py --id=B &
+ttab -w python main.py --id=C &
+ttab -w python main.py --id=D &
+ttab -w python main.py --id=E &
+
+sleep 1
+
+# Run clients
+ttab -w python grpc_client.py &
+ttab -w python grpc_client.py &
 
 wait

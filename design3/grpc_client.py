@@ -52,7 +52,7 @@ class Client:
         server_responses = {}
         
         # Receive a message from each server
-        for replica_id, host, port in zip(self.replica_ids, self.hosts, self.ports):
+        for replica_id, host, port in zip(self.replica_ids, self.hosts.values(), self.ports.values()):
             with grpc.insecure_channel(str(host) + ':' + str(port)) as channel:
                 stub = messages_pb2_grpc.ServerStub(channel)
                 request = messages_pb2.MessageToServer(
@@ -82,7 +82,7 @@ class Client:
         else:
             for response in unique_responses:
                 if response_counts[response] == max_response_count:
-                    data = response.message
+                    data = response
         
         if "SERVER%Kill" in data:
             # Server has sent a signal to kill the client because of an invalid request
@@ -153,7 +153,7 @@ def Main():
     '''Main messaging loop.'''
 
     # create new client instance
-    client = Client(HOST, PORT)
+    client = Client(HOSTS, PORTS)
 
     # start thread for receiving messages in background
     start_new_thread(threaded_receive, (client,))

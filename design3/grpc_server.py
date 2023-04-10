@@ -96,9 +96,6 @@ class Server(messages_pb2_grpc.ServerServicer):
         '''receive and parse a message from the client'''
 
         with server_lock:
-            # immediately add to pending log
-            self.pending_log.append(request)
-        
             # parse request structure
             opcode = request.opcode
             username = request.username
