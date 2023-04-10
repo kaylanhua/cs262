@@ -17,6 +17,10 @@ This will generate the _pb2_grpc.py and _pb2.py from the messages.proto file.
 
 Then, from the grpc_server.py, set the host and port to the same thing as in grpc_client.py (if running on one machine) and run the two files using the instructions above replacing socket_server.py with grpc_server.py and same for the client file. If you are running in two machines, follow the instructions above. 
 
+### communication across two machines / computers
+``` $ ipconfig getifaddr en0 ```
+This command will retrieve your machine's IP address so that others can connect on to your machine. 
+
 ---
 
 ## general design choices
@@ -47,10 +51,10 @@ To combat this, we wrote a script called reset.sh which erase everything from al
 
 
 ### testing
-Testing was done manually and through asserts. We wrote a script to automatically start up the five server replicas in different terminals and n clients, each in their own terminal  We tested several cases:
+Testing was done manually and through asserts. We wrote a script to automatically start up the five server replicas in different terminals and n clients, each in their own terminal and with connections to each of the five servers. We then tested several cases:
 
 - Incorrect IDs being fed in for the five replicas (we accept only A, B, C, D, E as replica names)
 - Two fault tolerance: clients stop receiving messages after three machines have died/the processes are killed and are told that the servers are down
-- Two Byzantine fault tolerance: when two replicas are not down but start sending incorrect messages to the clients, the clients will nt
+- Two Byzantine fault tolerance: when two replicas are not down but start sending incorrect messages to the clients, the clients will not ingest the corrupted messages at all because there is not a 3 replica consensus. 
 - Clients receiving messages that are 
 
